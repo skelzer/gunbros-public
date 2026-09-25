@@ -1,6 +1,19 @@
 # GunBros
 
 A browser-based, turn-based 2D artillery game for two brothers in different cities.
+
+![A turn on the temple map](docs/ui/maps/temple_desktop.png)
+
+2 to 8 players online, 18 mobiles with their own shots and specials, 8 painted maps,
+wind, items, weather and sudden death. Each player charges a shot, sets the angle and
+reads the wind; whoever is left standing wins.
+
+## How it was made
+
+The code, tests, pixel art pipeline (Blender scripts) and docs were written by Claude
+agents in Claude Code: **Claude Opus 5.5** for most of it, with **Claude Fable 5.1** on
+parts, working phase by phase from `docs/DESIGN.md`. The human side was design
+direction, playtesting and review.
 `docs/DESIGN.md` is the contract every phase is built against.
 
 - `packages/shared` — the whole simulation: deterministic, zero DOM, zero Node.
