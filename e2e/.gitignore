@@ -1,0 +1,3 @@
+# Throwaway Playwright scripts. They have to live in here to resolve
+# `@playwright/test`, and they are not part of the suite.
+.tmp-*

@@ -1,0 +1,924 @@
+{
+ "image": "ui_kit.png",
+ "size": [
+  256,
+  305
+ ],
+ "pieces": {
+  "panel": {
+   "kind": "nine",
+   "rect": [
+    29,
+    193,
+    32,
+    32
+   ],
+   "slices": [
+    9,
+    9,
+    9,
+    9
+   ]
+  },
+  "panel-dark": {
+   "kind": "nine",
+   "rect": [
+    194,
+    255,
+    16,
+    16
+   ],
+   "slices": [
+    5,
+    5,
+    5,
+    5
+   ]
+  },
+  "panel-bar": {
+   "kind": "nine",
+   "rect": [
+    62,
+    193,
+    32,
+    32
+   ],
+   "slices": [
+    11,
+    9,
+    8,
+    9
+   ]
+  },
+  "recess": {
+   "kind": "nine",
+   "rect": [
+    211,
+    255,
+    16,
+    16
+   ],
+   "slices": [
+    5,
+    5,
+    5,
+    5
+   ]
+  },
+  "frame-gold": {
+   "kind": "nine",
+   "rect": [
+    150,
+    230,
+    24,
+    24
+   ],
+   "slices": [
+    7,
+    7,
+    7,
+    7
+   ]
+  },
+  "button/normal": {
+   "kind": "nine",
+   "rect": [
+    100,
+    230,
+    24,
+    24
+   ],
+   "slices": [
+    7,
+    7,
+    7,
+    7
+   ]
+  },
+  "button/hover": {
+   "kind": "nine",
+   "rect": [
+    75,
+    230,
+    24,
+    24
+   ],
+   "slices": [
+    7,
+    7,
+    7,
+    7
+   ]
+  },
+  "button/pressed": {
+   "kind": "nine",
+   "rect": [
+    125,
+    230,
+    24,
+    24
+   ],
+   "slices": [
+    7,
+    7,
+    7,
+    7
+   ]
+  },
+  "button/disabled": {
+   "kind": "nine",
+   "rect": [
+    50,
+    230,
+    24,
+    24
+   ],
+   "slices": [
+    7,
+    7,
+    7,
+    7
+   ]
+  },
+  "button-gold/normal": {
+   "kind": "nine",
+   "rect": [
+    0,
+    230,
+    24,
+    24
+   ],
+   "slices": [
+    7,
+    7,
+    7,
+    7
+   ]
+  },
+  "button-gold/hover": {
+   "kind": "nine",
+   "rect": [
+    218,
+    193,
+    24,
+    24
+   ],
+   "slices": [
+    7,
+    7,
+    7,
+    7
+   ]
+  },
+  "button-gold/pressed": {
+   "kind": "nine",
+   "rect": [
+    25,
+    230,
+    24,
+    24
+   ],
+   "slices": [
+    7,
+    7,
+    7,
+    7
+   ]
+  },
+  "button-gold/disabled": {
+   "kind": "nine",
+   "rect": [
+    193,
+    193,
+    24,
+    24
+   ],
+   "slices": [
+    7,
+    7,
+    7,
+    7
+   ]
+  },
+  "trough": {
+   "kind": "nine",
+   "rect": [
+    25,
+    255,
+    32,
+    16
+   ],
+   "slices": [
+    4,
+    7,
+    4,
+    7
+   ]
+  },
+  "trough-small": {
+   "kind": "nine",
+   "rect": [
+    226,
+    280,
+    16,
+    8
+   ],
+   "slices": [
+    2,
+    3,
+    2,
+    3
+   ]
+  },
+  "fill/amber": {
+   "kind": "hbar",
+   "rect": [
+    252,
+    280,
+    4,
+    8
+   ]
+  },
+  "fill-small/amber": {
+   "kind": "hbar",
+   "rect": [
+    20,
+    297,
+    2,
+    4
+   ]
+  },
+  "fill/cyan": {
+   "kind": "hbar",
+   "rect": [
+    0,
+    297,
+    4,
+    8
+   ]
+  },
+  "fill-small/cyan": {
+   "kind": "hbar",
+   "rect": [
+    23,
+    297,
+    2,
+    4
+   ]
+  },
+  "fill/green": {
+   "kind": "hbar",
+   "rect": [
+    5,
+    297,
+    4,
+    8
+   ]
+  },
+  "fill-small/green": {
+   "kind": "hbar",
+   "rect": [
+    26,
+    297,
+    2,
+    4
+   ]
+  },
+  "fill/red": {
+   "kind": "hbar",
+   "rect": [
+    10,
+    297,
+    4,
+    8
+   ]
+  },
+  "fill-small/red": {
+   "kind": "hbar",
+   "rect": [
+    29,
+    297,
+    2,
+    4
+   ]
+  },
+  "fill/violet": {
+   "kind": "hbar",
+   "rect": [
+    15,
+    297,
+    4,
+    8
+   ]
+  },
+  "fill-small/violet": {
+   "kind": "hbar",
+   "rect": [
+    32,
+    297,
+    2,
+    4
+   ]
+  },
+  "power-marker": {
+   "kind": "sprite",
+   "rect": [
+    216,
+    280,
+    9,
+    12
+   ],
+   "pivot": [
+    4.5,
+    11
+   ]
+  },
+  "dial": {
+   "kind": "sprite",
+   "rect": [
+    0,
+    132,
+    60,
+    60
+   ],
+   "pivot": [
+    30,
+    30
+   ]
+  },
+  "dial-small": {
+   "kind": "sprite",
+   "rect": [
+    61,
+    132,
+    52,
+    52
+   ],
+   "pivot": [
+    26,
+    26
+   ]
+  },
+  "dial-hub": {
+   "kind": "sprite",
+   "rect": [
+    243,
+    280,
+    8,
+    8
+   ],
+   "pivot": [
+    4,
+    4
+   ]
+  },
+  "wind-plate": {
+   "kind": "sprite",
+   "rect": [
+    114,
+    132,
+    44,
+    44
+   ],
+   "pivot": [
+    22,
+    22
+   ]
+  },
+  "wind-arrow": {
+   "kind": "strip",
+   "rect": [
+    0,
+    0,
+    32,
+    32
+   ],
+   "pivot": [
+    16,
+    16
+   ],
+   "frames": [
+    [
+     0,
+     0,
+     32,
+     32
+    ],
+    [
+     33,
+     0,
+     32,
+     32
+    ],
+    [
+     66,
+     0,
+     32,
+     32
+    ],
+    [
+     99,
+     0,
+     32,
+     32
+    ],
+    [
+     132,
+     0,
+     32,
+     32
+    ],
+    [
+     165,
+     0,
+     32,
+     32
+    ],
+    [
+     198,
+     0,
+     32,
+     32
+    ],
+    [
+     0,
+     33,
+     32,
+     32
+    ],
+    [
+     33,
+     33,
+     32,
+     32
+    ],
+    [
+     66,
+     33,
+     32,
+     32
+    ],
+    [
+     99,
+     33,
+     32,
+     32
+    ],
+    [
+     132,
+     33,
+     32,
+     32
+    ],
+    [
+     165,
+     33,
+     32,
+     32
+    ],
+    [
+     198,
+     33,
+     32,
+     32
+    ],
+    [
+     0,
+     66,
+     32,
+     32
+    ],
+    [
+     33,
+     66,
+     32,
+     32
+    ],
+    [
+     66,
+     66,
+     32,
+     32
+    ],
+    [
+     99,
+     66,
+     32,
+     32
+    ],
+    [
+     132,
+     66,
+     32,
+     32
+    ],
+    [
+     165,
+     66,
+     32,
+     32
+    ],
+    [
+     198,
+     66,
+     32,
+     32
+    ],
+    [
+     0,
+     99,
+     32,
+     32
+    ],
+    [
+     33,
+     99,
+     32,
+     32
+    ],
+    [
+     66,
+     99,
+     32,
+     32
+    ]
+   ],
+   "stepDeg": 15
+  },
+  "banner/gold": {
+   "kind": "nine",
+   "rect": [
+    95,
+    193,
+    48,
+    24
+   ],
+   "slices": [
+    7,
+    14,
+    7,
+    14
+   ]
+  },
+  "banner/steel": {
+   "kind": "nine",
+   "rect": [
+    144,
+    193,
+    48,
+    24
+   ],
+   "slices": [
+    7,
+    14,
+    7,
+    14
+   ]
+  },
+  "card/normal": {
+   "kind": "nine",
+   "rect": [
+    217,
+    132,
+    28,
+    36
+   ],
+   "slices": [
+    9,
+    9,
+    9,
+    9
+   ]
+  },
+  "card/hover": {
+   "kind": "nine",
+   "rect": [
+    159,
+    132,
+    28,
+    36
+   ],
+   "slices": [
+    9,
+    9,
+    9,
+    9
+   ]
+  },
+  "card/selected": {
+   "kind": "nine",
+   "rect": [
+    0,
+    193,
+    28,
+    36
+   ],
+   "slices": [
+    9,
+    9,
+    9,
+    9
+   ]
+  },
+  "card/locked": {
+   "kind": "nine",
+   "rect": [
+    188,
+    132,
+    28,
+    36
+   ],
+   "slices": [
+    9,
+    9,
+    9,
+    9
+   ]
+  },
+  "slot/empty": {
+   "kind": "nine",
+   "rect": [
+    200,
+    230,
+    24,
+    24
+   ],
+   "slices": [
+    7,
+    7,
+    7,
+    7
+   ]
+  },
+  "slot/filled": {
+   "kind": "nine",
+   "rect": [
+    225,
+    230,
+    24,
+    24
+   ],
+   "slices": [
+    7,
+    7,
+    7,
+    7
+   ]
+  },
+  "slot/used": {
+   "kind": "nine",
+   "rect": [
+    0,
+    255,
+    24,
+    24
+   ],
+   "slices": [
+    7,
+    7,
+    7,
+    7
+   ]
+  },
+  "slot/active": {
+   "kind": "nine",
+   "rect": [
+    175,
+    230,
+    24,
+    24
+   ],
+   "slices": [
+    7,
+    7,
+    7,
+    7
+   ]
+  },
+  "shot/s1": {
+   "kind": "icon",
+   "rect": [
+    228,
+    255,
+    16,
+    16
+   ]
+  },
+  "shot/s2": {
+   "kind": "icon",
+   "rect": [
+    0,
+    280,
+    16,
+    16
+   ]
+  },
+  "shot/ss": {
+   "kind": "icon",
+   "rect": [
+    17,
+    280,
+    16,
+    16
+   ]
+  },
+  "item/dual": {
+   "kind": "icon",
+   "rect": [
+    75,
+    255,
+    16,
+    16
+   ]
+  },
+  "item/dualPlus": {
+   "kind": "icon",
+   "rect": [
+    92,
+    255,
+    16,
+    16
+   ]
+  },
+  "item/teleport": {
+   "kind": "icon",
+   "rect": [
+    160,
+    255,
+    16,
+    16
+   ]
+  },
+  "item/healSmall": {
+   "kind": "icon",
+   "rect": [
+    126,
+    255,
+    16,
+    16
+   ]
+  },
+  "item/healLarge": {
+   "kind": "icon",
+   "rect": [
+    109,
+    255,
+    16,
+    16
+   ]
+  },
+  "item/bunge": {
+   "kind": "icon",
+   "rect": [
+    58,
+    255,
+    16,
+    16
+   ]
+  },
+  "item/powerUp": {
+   "kind": "icon",
+   "rect": [
+    143,
+    255,
+    16,
+    16
+   ]
+  },
+  "item/windChange": {
+   "kind": "icon",
+   "rect": [
+    177,
+    255,
+    16,
+    16
+   ]
+  },
+  "status/shield": {
+   "kind": "icon",
+   "rect": [
+    164,
+    280,
+    12,
+    12
+   ]
+  },
+  "status/frozen": {
+   "kind": "icon",
+   "rect": [
+    112,
+    280,
+    12,
+    12
+   ]
+  },
+  "status/boost": {
+   "kind": "icon",
+   "rect": [
+    34,
+    280,
+    12,
+    12
+   ]
+  },
+  "status/dig": {
+   "kind": "icon",
+   "rect": [
+    73,
+    280,
+    12,
+    12
+   ]
+  },
+  "status/dual": {
+   "kind": "icon",
+   "rect": [
+    86,
+    280,
+    12,
+    12
+   ]
+  },
+  "status/ssReady": {
+   "kind": "icon",
+   "rect": [
+    177,
+    280,
+    12,
+    12
+   ]
+  },
+  "status/dead": {
+   "kind": "icon",
+   "rect": [
+    47,
+    280,
+    12,
+    12
+   ]
+  },
+  "status/offline": {
+   "kind": "icon",
+   "rect": [
+    151,
+    280,
+    12,
+    12
+   ]
+  },
+  "status/delay": {
+   "kind": "icon",
+   "rect": [
+    60,
+    280,
+    12,
+    12
+   ]
+  },
+  "status/heart": {
+   "kind": "icon",
+   "rect": [
+    125,
+    280,
+    12,
+    12
+   ]
+  },
+  "status/thor": {
+   "kind": "icon",
+   "rect": [
+    190,
+    280,
+    12,
+    12
+   ]
+  },
+  "status/tornado": {
+   "kind": "icon",
+   "rect": [
+    203,
+    280,
+    12,
+    12
+   ]
+  },
+  "status/force": {
+   "kind": "icon",
+   "rect": [
+    99,
+    280,
+    12,
+    12
+   ]
+  },
+  "status/mine": {
+   "kind": "icon",
+   "rect": [
+    138,
+    280,
+    12,
+    12
+   ]
+  }
+ }
+}

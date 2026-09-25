@@ -1,0 +1,11 @@
+// The splash page is a static site on Cloudflare Workers static assets (the successor to
+// Pages). `pnpm site` builds ./dist, then `pnpm site:deploy` uploads it; the custom domain
+// route below creates the gunbros.example.com DNS record and certificate on first deploy.
+{
+  "name": "gunbros-site",
+  "compatibility_date": "2026-09-24",
+  "assets": {
+    "directory": "./dist"
+  },
+  "routes": [{ "pattern": "gunbros.example.com", "custom_domain": true }]
+}

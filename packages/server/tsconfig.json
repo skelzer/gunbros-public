@@ -1,0 +1,18 @@
+{
+  // Typecheck and `tsx` dev: `@gunbros/shared` resolves to its TypeScript source, so a
+  // change to the simulation is visible here without a build. The build config drops
+  // the mapping and consumes the package's `dist` instead (DESIGN §1.5).
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2023"],
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@gunbros/shared": ["../shared/src/index.ts"]
+    }
+  },
+  "include": ["src", "test", "vitest.config.ts", "eslint.config.js"]
+}

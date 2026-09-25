@@ -1,0 +1,10 @@
+{
+  // Tests and tooling may use Node APIs; the simulation may not.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["test", "src", "vitest.config.ts", "eslint.config.js"]
+}

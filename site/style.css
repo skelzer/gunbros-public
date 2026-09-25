@@ -1,0 +1,899 @@
+/* GunBros splash. The game's menu skin (packages/client/index.html): bevelled
+   navy-steel plates with hard 1 px outlines and rivets, one gold accent, and pixel art
+   shown only at whole-number scales. */
+:root {
+  color-scheme: dark;
+  --bg: #0b1220;
+  --bg-deep: #070d18;
+  --fg: #dfe7ef;
+  --muted: #93a3b3;
+  --dim: #5b6874;
+  --accent: #ffd23f;
+  --accent-light: #fff3c4;
+  --accent-mid: #f0a020;
+  --accent-dark: #b4620e;
+  --good: #7cc45a;
+  --team-a: #6fd1ff;
+  --team-b: #ffa45c;
+
+  --plate: #1b2a3e;
+  --plate-top: #24374f;
+  --plate-deep: #142031;
+  --bevel-light: #46648a;
+  --bevel-dark: #0a1017;
+  --outline: #050a12;
+  --recess: #0d1622;
+
+  --rivet: radial-gradient(circle at 40% 35%, #dfe9f2 0 28%, #8e9dae 28% 62%, #10141c 62% 100%, transparent 100%);
+
+  --pixel: 'Silkscreen', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  --body: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  --gutter: 16px;
+}
+@media (min-width: 700px) {
+  :root {
+    --gutter: 32px;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+/* The board: a deep blue wash, a faint 32 px grid and scanlines, as in the menus. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.022) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.016) 0 1px, transparent 1px 32px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.016) 0 1px, transparent 1px 32px),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+}
+img,
+canvas {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+img {
+  image-rendering: pixelated;
+}
+a {
+  color: var(--accent);
+}
+h1,
+h2,
+h3 {
+  font-family: var(--pixel);
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0;
+}
+p {
+  margin: 0;
+}
+ul,
+ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.skip {
+  position: absolute;
+  left: 8px;
+  top: -60px;
+  z-index: 10;
+  padding: 8px 12px;
+  background: var(--accent);
+  color: #10141c;
+  font-family: var(--pixel);
+}
+.skip:focus {
+  top: 8px;
+}
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* --- plates and buttons ----------------------------------------------------- */
+.plate {
+  border: 2px solid var(--outline);
+  box-shadow:
+    inset 2px 2px 0 0 var(--bevel-light),
+    inset -2px -2px 0 0 var(--bevel-dark),
+    0 4px 0 0 rgba(0, 0, 0, 0.45);
+  background-color: var(--plate);
+  background-image: var(--rivet), var(--rivet), var(--rivet), var(--rivet),
+    linear-gradient(180deg, var(--plate-top) 0 28%, var(--plate) 28% 100%);
+  background-size: 6px 6px, 6px 6px, 6px 6px, 6px 6px, auto;
+  background-position: 7px 7px, calc(100% - 7px) 7px, 7px calc(100% - 7px), calc(100% - 7px) calc(100% - 7px), 0 0;
+  background-repeat: no-repeat;
+}
+
+.btn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 48px;
+  padding: 10px 22px;
+  font-family: var(--pixel);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--fg);
+  border: 2px solid var(--outline);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 60ms steps(1);
+}
+.btn:active {
+  transform: translate(0, 2px);
+}
+.btn-steel {
+  background: linear-gradient(180deg, #2c4462 0 45%, var(--plate) 45% 100%);
+  box-shadow:
+    inset 2px 2px 0 0 var(--bevel-light),
+    inset -2px -2px 0 0 var(--bevel-dark),
+    0 4px 0 0 var(--outline);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.6);
+}
+.btn-steel:active {
+  box-shadow:
+    inset 2px 2px 0 0 var(--bevel-dark),
+    inset -2px -2px 0 0 var(--bevel-light),
+    0 2px 0 0 var(--outline);
+}
+/* The FIRE key: the one big gold button. */
+.btn-play {
+  min-width: 200px;
+  min-height: 64px;
+  padding: 10px 30px 12px;
+  color: #3a1d04;
+  background: linear-gradient(180deg, var(--accent-light) 0 12%, var(--accent) 12% 52%, var(--accent-mid) 52% 88%, var(--accent-dark) 88% 100%);
+  box-shadow:
+    inset 2px 2px 0 0 #fff8dc,
+    inset -2px -2px 0 0 #7a3f08,
+    0 4px 0 0 var(--outline),
+    0 0 0 4px rgba(255, 210, 63, 0.18);
+  text-shadow: 0 2px 0 rgba(255, 243, 196, 0.6);
+}
+.btn-play .btn-label {
+  font-size: 32px;
+  letter-spacing: 0.1em;
+}
+.btn-play .btn-sub {
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+}
+.btn-play .btn-sub:empty {
+  display: none;
+}
+@media (hover: hover) {
+  .btn-play:not(.is-soon):hover {
+    filter: brightness(1.08);
+  }
+  .btn-steel:hover {
+    background: linear-gradient(180deg, #365378 0 45%, #223349 45% 100%);
+    color: #fff;
+  }
+}
+.btn-play:not(.is-soon):active {
+  box-shadow:
+    inset 2px 2px 0 0 #7a3f08,
+    inset -2px -2px 0 0 #fff8dc,
+    0 2px 0 0 var(--outline);
+}
+/* No game URL yet: the key is there, but greyed like the kit's disabled button. */
+.btn-play.is-soon {
+  cursor: default;
+  color: #9fb0c2;
+  background: linear-gradient(180deg, #3a4a5e 0 45%, #2a3748 45% 100%);
+  box-shadow:
+    inset 2px 2px 0 0 #56687e,
+    inset -2px -2px 0 0 #141c27,
+    0 4px 0 0 var(--outline);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.55);
+}
+.btn-play.is-soon:active {
+  transform: none;
+}
+.btn-play.is-soon .btn-sub {
+  color: var(--accent);
+}
+
+/* --- UI kit pieces ---------------------------------------------------------- */
+/* One class per atlas piece (--x, --y, --w, --h come from build.mjs), drawn at a whole
+   number scale --s. */
+.ui {
+  --s: 1;
+  display: inline-block;
+  flex: none;
+  width: calc(var(--w) * var(--s) * 1px);
+  height: calc(var(--h) * var(--s) * 1px);
+  background: url(art/ui_kit.png) no-repeat;
+  background-position: calc(var(--x) * var(--s) * -1px) calc(var(--y) * var(--s) * -1px);
+  background-size: calc(256px * var(--s)) calc(305px * var(--s));
+  image-rendering: pixelated;
+  vertical-align: middle;
+}
+.x2 {
+  --s: 2;
+}
+.x3 {
+  --s: 3;
+}
+.x4 {
+  --s: 4;
+}
+.wind-dial {
+  position: relative;
+}
+.wind-arrow {
+  --w: 32;
+  --h: 32;
+  position: absolute;
+  left: calc(6px * var(--s));
+  top: calc(6px * var(--s));
+  width: calc(32px * var(--s));
+  height: calc(32px * var(--s));
+  background: url(art/ui_kit.png) no-repeat;
+  background-position: calc(var(--x) * var(--s) * -1px) calc(var(--y) * var(--s) * -1px);
+  background-size: calc(256px * var(--s)) calc(305px * var(--s));
+  image-rendering: pixelated;
+}
+
+/* --- hero ------------------------------------------------------------------- */
+.hero {
+  position: relative;
+  height: 100vh;
+  height: 100svh;
+  min-height: 360px;
+  max-height: 1100px;
+  overflow: hidden;
+  /* Rolling Hills' sky, for the moment before the canvas paints (and without JS). */
+  background: linear-gradient(180deg, #3f86c4 0%, #6fb1e3 40%, #a6d8f4 70%, #dff1f8 100%);
+  isolation: isolate;
+}
+#scene {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: -1;
+  display: block;
+}
+.hero::after {
+  /* Where the hero meets the page: a hard two-step edge, not a blur. */
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 8px;
+  background: linear-gradient(180deg, var(--outline) 0 50%, var(--bg) 50% 100%);
+}
+.hero-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+  padding: max(40px, 7vh) var(--gutter) 0;
+  padding-top: max(40px, 7svh, env(safe-area-inset-top));
+}
+.brand {
+  line-height: 0;
+}
+.wordmark {
+  display: block;
+  width: calc(61px * var(--wm, 5));
+  height: calc(15px * var(--wm, 5));
+  --wm: 5;
+}
+@media (min-width: 560px) {
+  .brand .wordmark {
+    --wm: 7;
+  }
+}
+@media (min-width: 900px) and (min-height: 700px) {
+  .brand .wordmark {
+    --wm: 9;
+  }
+}
+.tagline {
+  max-width: 34em;
+  padding: 8px 14px;
+  font-family: var(--pixel);
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--fg);
+  background: rgba(7, 13, 24, 0.78);
+  border: 2px solid var(--outline);
+  box-shadow: inset 2px 2px 0 0 rgba(70, 100, 138, 0.6);
+}
+.cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px 16px;
+  margin-top: 4px;
+}
+.soon {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--accent-light);
+  background: rgba(7, 13, 24, 0.72);
+  border: 2px solid var(--outline);
+}
+.soon[hidden] {
+  display: none;
+}
+.blink {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--outline);
+  animation: blink 1.2s steps(1) infinite;
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+.scroll-cue {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  width: 40px;
+  height: 40px;
+  margin-left: -20px;
+  display: grid;
+  place-items: center;
+  background: rgba(7, 13, 24, 0.72);
+  border: 2px solid var(--outline);
+  box-shadow: inset 2px 2px 0 0 rgba(70, 100, 138, 0.6);
+}
+.scroll-cue span {
+  width: 14px;
+  height: 14px;
+  border-right: 4px solid var(--accent);
+  border-bottom: 4px solid var(--accent);
+  transform: translateY(-3px) rotate(45deg);
+  animation: bob 1.6s steps(2) infinite;
+}
+@keyframes bob {
+  50% {
+    translate: 0 4px;
+  }
+}
+
+/* A landscape phone: everything in one short row of sky. */
+@media (max-height: 520px) and (orientation: landscape) {
+  .hero {
+    min-height: 320px;
+  }
+  .hero-inner {
+    gap: 10px;
+    padding-top: max(18px, env(safe-area-inset-top));
+    padding-left: max(var(--gutter), env(safe-area-inset-left));
+    padding-right: max(var(--gutter), env(safe-area-inset-right));
+  }
+  .brand .wordmark {
+    --wm: 5;
+  }
+  .tagline {
+    font-size: 13px;
+    padding: 4px 10px;
+  }
+  .tagline .more {
+    display: none;
+  }
+  .soon {
+    padding: 3px 10px;
+    font-size: 12px;
+  }
+  .btn-play {
+    min-height: 54px;
+  }
+  .btn-play .btn-label {
+    font-size: 24px;
+  }
+  .scroll-cue {
+    display: none;
+  }
+}
+
+/* --- sections --------------------------------------------------------------- */
+.wrap {
+  width: 100%;
+  max-width: 1344px;
+  margin: 0 auto;
+  padding-left: max(var(--gutter), env(safe-area-inset-left));
+  padding-right: max(var(--gutter), env(safe-area-inset-right));
+}
+.section {
+  padding: 64px 0 24px;
+}
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  font-size: 24px;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-shadow: 0 3px 0 #000;
+}
+.section-title::before,
+.section-title::after {
+  content: '';
+  flex: 1 1 0;
+  height: 4px;
+  background: var(--bevel-light);
+  box-shadow: 0 2px 0 0 var(--outline);
+}
+.section-title::before {
+  max-width: 48px;
+}
+@media (min-width: 700px) {
+  .section-title {
+    font-size: 32px;
+  }
+}
+.lede {
+  max-width: 48em;
+  margin-bottom: 28px;
+  color: var(--muted);
+}
+
+/* What is it */
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  gap: 20px;
+}
+.feature {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 20px 22px;
+}
+.feature h3,
+.step h3 {
+  font-size: 16px;
+  color: var(--accent);
+  text-shadow: 0 2px 0 #000;
+}
+.feature p,
+.step p {
+  font-size: 14px;
+  color: var(--fg);
+}
+.feature-art {
+  height: 96px;
+  display: flex;
+  align-items: center;
+}
+.players {
+  display: grid;
+  grid-template-columns: repeat(4, 20px);
+  gap: 8px;
+}
+.players span {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--outline);
+  background: linear-gradient(180deg, #a8e6ff 0 30%, var(--team-a) 30% 100%);
+  box-shadow: inset -2px -2px 0 0 rgba(0, 0, 0, 0.25);
+}
+.players span:nth-child(n + 5) {
+  background: linear-gradient(180deg, #ffd0a8 0 30%, var(--team-b) 30% 100%);
+}
+.phone {
+  position: relative;
+  width: 116px;
+  height: 60px;
+  border: 2px solid var(--outline);
+  background: #10141c;
+  box-shadow: inset 2px 2px 0 0 #3a4658;
+  padding: 6px 12px;
+}
+.phone::before {
+  /* the screen: sky, a hill */
+  content: '';
+  position: absolute;
+  inset: 6px 14px;
+  background:
+    radial-gradient(ellipse 30px 12px at 30% 100%, #6fbb4e 98%, transparent 100%),
+    radial-gradient(ellipse 36px 10px at 85% 100%, #55993c 98%, transparent 100%),
+    linear-gradient(180deg, #6fb1e3, #dff1f8);
+}
+.phone-fire {
+  position: absolute;
+  right: 18px;
+  bottom: 9px;
+  padding: 2px 3px 1px;
+  font-family: var(--pixel);
+  font-size: 8px;
+  line-height: 1;
+  color: #3a1d04;
+  background: var(--accent-mid);
+  border: 1px solid var(--outline);
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+  margin-top: 24px;
+}
+.chips li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 8px;
+  font-size: 13px;
+  color: var(--muted);
+  background: var(--recess);
+  border: 2px solid var(--outline);
+  box-shadow: inset 2px 2px 0 0 var(--bevel-dark), inset -2px -2px 0 0 rgba(70, 100, 138, 0.45);
+}
+.chips .ui {
+  --s: 2;
+}
+
+/* Roster */
+.roster {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(184px, 1fr));
+  grid-auto-flow: dense;
+  gap: 16px;
+}
+/* A mobile too wide for one column at 2x (script.js) spans two instead of shrinking. */
+.mobile-card.is-wide {
+  grid-column: span 2;
+}
+.mobile-card {
+  --s: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px 14px;
+  text-align: center;
+  background: var(--plate);
+  border: 2px solid var(--outline);
+  box-shadow:
+    inset 2px 2px 0 0 var(--bevel-light),
+    inset -2px -2px 0 0 var(--bevel-dark),
+    0 4px 0 0 rgba(0, 0, 0, 0.45);
+  min-width: 0;
+}
+.mobile-stage {
+  /* A strip of sky and grass the mobile stands on. */
+  position: relative;
+  align-self: stretch;
+  /* Tall enough for the tallest idle (63 px above the feet) at 2x over the grass. */
+  height: 156px;
+  margin: 2px 2px 4px;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, transparent 0 calc(100% - 22px), #a6e069 calc(100% - 22px) calc(100% - 20px), #6fbb4e calc(100% - 20px) calc(100% - 12px), #8a6a3c calc(100% - 12px) 100%),
+    linear-gradient(180deg, #24374f, #2f4d6e);
+  border-bottom: 2px solid var(--outline);
+}
+.sprite {
+  position: absolute;
+  left: 50%;
+  bottom: 20px;
+  /* The frame is already cropped to the idle pixels, so centring the frame centres
+     the mobile; centring the anchor pushed a long tail or wing off the card.
+     `--fit` is the largest whole scale the card has room for (script.js), 2 without JS. */
+  --s: var(--fit, 2);
+  width: calc(var(--fw) * var(--s) * 1px);
+  height: calc(var(--fh) * var(--s) * 1px);
+  margin-left: calc(var(--fw) * var(--s) * -0.5px);
+  margin-bottom: calc((var(--ay) - var(--fh)) * var(--s) * 1px);
+  overflow: hidden;
+}
+.sprite img {
+  display: block;
+  width: calc(var(--fw) * var(--n) * var(--s) * 1px);
+  height: calc(var(--fh) * 2 * var(--s) * 1px);
+  max-width: none;
+  animation: idle calc(var(--n) * var(--ms) * 1ms) steps(var(--n)) infinite;
+}
+@keyframes idle {
+  to {
+    transform: translateX(calc(var(--fw) * var(--n) * var(--s) * -1px));
+  }
+}
+.mobile-card h3 {
+  font-size: 16px;
+  color: var(--fg);
+  text-shadow: 0 2px 0 #000;
+}
+.mobile-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+}
+.tag {
+  display: inline-block;
+  padding: 2px 6px 1px;
+  font-family: var(--pixel);
+  font-size: 10px;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #0b1220;
+  border: 1px solid var(--outline);
+}
+.tag-mechanical {
+  background: #9fb4c8;
+}
+.tag-bionic {
+  background: var(--good);
+}
+.tag-shielded {
+  background: var(--team-a);
+}
+.tag-random {
+  background: var(--accent);
+}
+.mobile-ss {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--muted);
+}
+.mobile-ss .ui {
+  --s: 1;
+}
+@media (min-width: 1100px) {
+  .roster {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+@media (min-width: 440px) and (max-width: 699px) {
+  .roster {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 439px) {
+  .roster {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+
+/* Maps */
+.maps {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 20px;
+}
+.map-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--plate);
+  border: 2px solid var(--outline);
+  box-shadow:
+    inset 2px 2px 0 0 var(--bevel-light),
+    inset -2px -2px 0 0 var(--bevel-dark),
+    0 4px 0 0 rgba(0, 0, 0, 0.45);
+  min-width: 0;
+}
+/* The picture is never resized: it is shown 1:1 and the card crops it, keeping the
+   ground (the bottom) in view. */
+.map-media {
+  position: relative;
+  height: 300px;
+  margin: 4px 4px 0;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  border: 2px solid var(--outline);
+  background: #10141c;
+}
+.map-media img {
+  flex: none;
+  display: block;
+  width: 640px;
+  height: 300px;
+  max-width: none;
+}
+.map-text {
+  padding: 12px 16px 16px;
+}
+.map-text h3 {
+  font-size: 16px;
+  color: var(--accent);
+  text-shadow: 0 2px 0 #000;
+  margin-bottom: 4px;
+}
+.map-text p {
+  font-size: 14px;
+  color: var(--fg);
+}
+@media (max-width: 700px) {
+  .map-media {
+    height: 220px;
+  }
+}
+@media (min-width: 1100px) {
+  .maps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+}
+
+/* How to play */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  gap: 20px;
+  counter-reset: step;
+}
+.step {
+  display: grid;
+  grid-template-columns: 104px 1fr;
+  align-items: start;
+  gap: 16px;
+  padding: 20px 20px 22px;
+  counter-increment: step;
+}
+.step h3::before {
+  content: counter(step) '. ';
+  color: var(--muted);
+}
+.step-art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 96px;
+}
+.step-items {
+  display: grid;
+  grid-template-columns: repeat(2, 32px);
+  gap: 6px;
+}
+.dial {
+  position: relative;
+}
+.needle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 36px;
+  height: 4px;
+  margin-top: -2px;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--outline);
+  transform-origin: 0 50%;
+  transform: rotate(-45deg);
+  animation: aim 3s steps(12) infinite alternate;
+}
+@keyframes aim {
+  from {
+    transform: rotate(-20deg);
+  }
+  to {
+    transform: rotate(-70deg);
+  }
+}
+.power {
+  position: relative;
+  width: 96px;
+  height: 22px;
+  border: 2px solid var(--outline);
+  background: var(--recess);
+  box-shadow: inset 2px 2px 0 0 var(--bevel-dark);
+  background-image: repeating-linear-gradient(90deg, transparent 0 22px, rgba(147, 163, 179, 0.35) 22px 24px);
+}
+.power-fill {
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  bottom: 2px;
+  width: 66%;
+  background: linear-gradient(180deg, #fff3c4 0 25%, var(--accent) 25% 60%, var(--accent-mid) 60% 100%);
+  animation: charge 2.4s steps(16) infinite;
+}
+@keyframes charge {
+  from {
+    width: 0;
+  }
+  80%,
+  to {
+    width: calc(100% - 4px);
+  }
+}
+.cta-bottom {
+  margin-top: 40px;
+}
+@media (max-width: 400px) {
+  .step {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .step-art {
+    justify-content: flex-start;
+    min-height: 0;
+  }
+}
+
+/* Footer */
+.footer {
+  margin-top: 64px;
+  padding: 40px 0 calc(40px + env(safe-area-inset-bottom));
+  border-top: 4px solid var(--outline);
+  background: var(--bg-deep);
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+.footer .wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.wordmark-small {
+  --wm: 3;
+  margin-bottom: 8px;
+}
+.fine {
+  max-width: 40em;
+  font-size: 12px;
+  color: var(--dim);
+}
+
+/* Still pictures for anyone who asked for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

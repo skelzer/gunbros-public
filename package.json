@@ -1,0 +1,36 @@
+{
+  "name": "gunbros",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.11.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel --stream dev",
+    "start": "pnpm --filter @gunbros/server start",
+    "build": "pnpm -r build",
+    "test": "pnpm --filter \"./packages/*\" test",
+    "e2e": "pnpm build && pnpm --filter @gunbros/e2e e2e",
+    "typecheck": "pnpm -r typecheck && pnpm typecheck:tools",
+    "typecheck:tools": "tsc -p tsconfig.tools.json",
+    "lint": "pnpm -r lint",
+    "sprites:render": "tsx tools/sprites/render.ts",
+    "icons": "tsx tools/icons.ts",
+    "ui:kit": "uv run --python 3.12 --no-project tools/blender/make_ui_kit.py",
+    "projectiles": "uv run --python 3.12 --no-project tools/blender/make_projectiles.py",
+    "maps": "uv run --python 3.12 --no-project tools/blender/make_maps.py",
+    "effects": "uv run --python 3.12 --no-project tools/blender/make_effects.py",
+    "music": "uv run --python 3.12 --no-project tools/music/make_music.py",
+    "site": "node site/build.mjs",
+    "site:og": "node site/og.mjs",
+    "site:deploy": "node site/build.mjs && cd site && npx -y wrangler deploy",
+    "deploy:prod": "bash deploy/server/deploy.sh"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}

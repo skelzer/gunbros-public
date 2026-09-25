@@ -1,0 +1,16 @@
+{
+  // The browser half: DOM types on, Node types off (the client never touches Node).
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["vite/client"],
+    // Same mapping as the Vite alias: the client typechecks against the simulation's
+    // source, so `pnpm typecheck` never depends on the shared package having been built.
+    "baseUrl": ".",
+    "paths": {
+      "@gunbros/shared": ["../shared/src/index.ts"]
+    }
+  },
+  "include": ["src"]
+}

@@ -1,0 +1,520 @@
+{
+  "mobile": "sapper",
+  "frameSize": [
+    84,
+    68
+  ],
+  "anchor": [
+    40,
+    61
+  ],
+  "barrelLength": 14,
+  "tickRate": 60,
+  "sheets": {
+    "body": "sapper_body.png",
+    "barrel": "sapper_barrel.png"
+  },
+  "states": {
+    "idle": {
+      "frameTicks": 10,
+      "frameMs": 167,
+      "loop": true,
+      "frames": [
+        {
+          "rect": [
+            0,
+            0,
+            84,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            52.0,
+            45.0
+          ],
+          "muzzle": [
+            66.0,
+            45.0
+          ]
+        },
+        {
+          "rect": [
+            84,
+            0,
+            84,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            52.0,
+            45.97
+          ],
+          "muzzle": [
+            66.0,
+            45.97
+          ]
+        },
+        {
+          "rect": [
+            168,
+            0,
+            84,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            52.0,
+            45.97
+          ],
+          "muzzle": [
+            66.0,
+            45.97
+          ]
+        },
+        {
+          "rect": [
+            252,
+            0,
+            84,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            52.0,
+            45.0
+          ],
+          "muzzle": [
+            66.0,
+            45.0
+          ]
+        }
+      ]
+    },
+    "move": {
+      "frameTicks": 5,
+      "frameMs": 83,
+      "loop": true,
+      "frames": [
+        {
+          "rect": [
+            0,
+            68,
+            84,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            52.0,
+            45.0
+          ],
+          "muzzle": [
+            66.0,
+            45.0
+          ]
+        },
+        {
+          "rect": [
+            84,
+            68,
+            84,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            52.0,
+            45.97
+          ],
+          "muzzle": [
+            66.0,
+            45.97
+          ]
+        },
+        {
+          "rect": [
+            168,
+            68,
+            84,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            52.0,
+            45.97
+          ],
+          "muzzle": [
+            66.0,
+            45.97
+          ]
+        },
+        {
+          "rect": [
+            252,
+            68,
+            84,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            52.0,
+            45.0
+          ],
+          "muzzle": [
+            66.0,
+            45.0
+          ]
+        },
+        {
+          "rect": [
+            336,
+            68,
+            84,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            52.0,
+            45.97
+          ],
+          "muzzle": [
+            66.0,
+            45.97
+          ]
+        },
+        {
+          "rect": [
+            420,
+            68,
+            84,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            52.0,
+            45.97
+          ],
+          "muzzle": [
+            66.0,
+            45.97
+          ]
+        }
+      ]
+    },
+    "charge": {
+      "frameTicks": 7,
+      "frameMs": 117,
+      "loop": true,
+      "frames": [
+        {
+          "rect": [
+            0,
+            136,
+            84,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            52.0,
+            45.97
+          ],
+          "muzzle": [
+            66.0,
+            45.97
+          ]
+        },
+        {
+          "rect": [
+            84,
+            136,
+            84,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            52.0,
+            45.97
+          ],
+          "muzzle": [
+            66.0,
+            45.97
+          ]
+        }
+      ]
+    },
+    "fire": {
+      "frameTicks": 5,
+      "frameMs": 83,
+      "loop": false,
+      "frames": [
+        {
+          "rect": [
+            0,
+            204,
+            84,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            51.0,
+            45.0
+          ],
+          "muzzle": [
+            65.0,
+            45.0
+          ]
+        },
+        {
+          "rect": [
+            84,
+            204,
+            84,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            51.0,
+            45.0
+          ],
+          "muzzle": [
+            65.0,
+            45.0
+          ]
+        },
+        {
+          "rect": [
+            168,
+            204,
+            84,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            52.0,
+            45.0
+          ],
+          "muzzle": [
+            66.0,
+            45.0
+          ]
+        },
+        {
+          "rect": [
+            252,
+            204,
+            84,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            52.0,
+            45.0
+          ],
+          "muzzle": [
+            66.0,
+            45.0
+          ]
+        },
+        {
+          "rect": [
+            336,
+            204,
+            84,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            52.0,
+            45.0
+          ],
+          "muzzle": [
+            66.0,
+            45.0
+          ]
+        }
+      ]
+    },
+    "hurt": {
+      "frameTicks": 5,
+      "frameMs": 83,
+      "loop": false,
+      "frames": [
+        {
+          "rect": [
+            0,
+            272,
+            84,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            50.0,
+            45.0
+          ],
+          "muzzle": [
+            64.0,
+            45.0
+          ]
+        },
+        {
+          "rect": [
+            84,
+            272,
+            84,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            53.0,
+            45.0
+          ],
+          "muzzle": [
+            67.0,
+            45.0
+          ]
+        },
+        {
+          "rect": [
+            168,
+            272,
+            84,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            52.0,
+            45.0
+          ],
+          "muzzle": [
+            66.0,
+            45.0
+          ]
+        }
+      ]
+    },
+    "death": {
+      "frameTicks": 6,
+      "frameMs": 100,
+      "loop": false,
+      "frames": [
+        {
+          "rect": [
+            0,
+            340,
+            84,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            52.0,
+            44.03
+          ],
+          "muzzle": [
+            66.0,
+            44.03
+          ]
+        },
+        {
+          "rect": [
+            84,
+            340,
+            84,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            52.0,
+            45.0
+          ],
+          "muzzle": [
+            66.0,
+            45.0
+          ]
+        },
+        {
+          "rect": [
+            168,
+            340,
+            84,
+            68
+          ],
+          "barrel": false,
+          "pivot": [
+            52.0,
+            45.97
+          ],
+          "muzzle": [
+            66.0,
+            45.97
+          ]
+        },
+        {
+          "rect": [
+            252,
+            340,
+            84,
+            68
+          ],
+          "barrel": false,
+          "pivot": [
+            52.0,
+            46.93
+          ],
+          "muzzle": [
+            66.0,
+            46.93
+          ]
+        },
+        {
+          "rect": [
+            336,
+            340,
+            84,
+            68
+          ],
+          "barrel": false,
+          "pivot": [
+            52.0,
+            46.93
+          ],
+          "muzzle": [
+            66.0,
+            46.93
+          ]
+        },
+        {
+          "rect": [
+            420,
+            340,
+            84,
+            68
+          ],
+          "barrel": false,
+          "pivot": [
+            52.0,
+            46.93
+          ],
+          "muzzle": [
+            66.0,
+            46.93
+          ]
+        },
+        {
+          "rect": [
+            504,
+            340,
+            84,
+            68
+          ],
+          "barrel": false,
+          "pivot": [
+            52.0,
+            46.93
+          ],
+          "muzzle": [
+            66.0,
+            46.93
+          ]
+        }
+      ]
+    }
+  }
+}

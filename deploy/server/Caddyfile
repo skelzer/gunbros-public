@@ -1,0 +1,21 @@
+# TLS and reverse proxy for GunBros (docs/DEPLOY.md). Caddy gets and renews the
+# Let's Encrypt certificate for GAME_DOMAIN by itself; the DNS record must point
+# straight at this server (Cloudflare: DNS only, grey cloud).
+
+{
+	# HTTP/3 needs UDP 443, which the firewall does not open. Without this Caddy would
+	# advertise h3 and browsers would try it first.
+	servers {
+		protocols h1 h2
+	}
+}
+
+{$GAME_DOMAIN:play.gunbros.example.com} {
+	encode zstd gzip
+	# The game trusts this header for its per-address limits (CLIENT_IP_HEADER).
+	# It is set, not appended, so a client cannot choose its own address.
+	# WebSocket upgrades on /ws pass through with no extra configuration.
+	reverse_proxy game:8080 {
+		header_up X-Real-IP {remote_host}
+	}
+}

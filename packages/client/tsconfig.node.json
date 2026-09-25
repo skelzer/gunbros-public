@@ -1,0 +1,10 @@
+{
+  // Build-time config files run in Node, so they get Node types and nothing else.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "lib": ["ES2022"],
+    "types": ["node"]
+  },
+  "include": ["vite.config.ts"]
+}

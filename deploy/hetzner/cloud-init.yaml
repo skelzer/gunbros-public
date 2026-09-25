@@ -1,0 +1,16 @@
+#cloud-config
+# Hetzner user-data for GunBros: runs deploy/server/bootstrap.sh on first boot, the same
+# script any other Ubuntu 24.04 server gets over SSH (docs/DEPLOY.md).
+#
+# This is a template: provision.sh fills in `content:` below with the base64 of
+# bootstrap.sh. The SSH keys Hetzner injects for root (the owner's and the CI deploy
+# key, both passed to `hcloud server create`) are copied to the `deploy` user by the
+# script, which then turns root login off.
+write_files:
+  - path: /root/gunbros-bootstrap.sh
+    permissions: "0700"
+    encoding: b64
+    content: __BOOTSTRAP_B64__
+
+runcmd:
+  - [bash, /root/gunbros-bootstrap.sh]

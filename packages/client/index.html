@@ -1,0 +1,1900 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!-- `user-scalable=no` and the maximum scale: a pinch on this page is two fingers on
+         the controls, not a zoom (see ui/viewport.ts for the Safari half of that).
+         `viewport-fit=cover` puts the canvas under the notch and `#app`'s safe-area
+         padding takes it back out. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <title>GunBros — turn-based artillery</title>
+    <meta
+      name="description"
+      content="GunBros: a small turn-based artillery game for two brothers in different cities. Pick a mobile, load six items, mind the wind."
+    />
+    <meta name="theme-color" content="#0b1220" />
+    <meta name="color-scheme" content="dark" />
+    <!-- Installed app (DESIGN §7 item 153): the manifest is the Android half, the three
+         `apple-` tags the iOS one, which reads no manifest at all. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icons/icon-180.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="GunBros" />
+    <!-- A pixel shell, drawn at 16x16 so the tab icon is art rather than a letter. The
+         PNG below it is the fallback for anything that will not take an SVG favicon. -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32.png" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%230b1220'/%3E%3Crect x='2' y='6' width='11' height='1' fill='%2310141c'/%3E%3Crect x='2' y='10' width='11' height='1' fill='%2310141c'/%3E%3Crect x='1' y='7' width='1' height='3' fill='%2310141c'/%3E%3Crect x='13' y='7' width='1' height='3' fill='%2310141c'/%3E%3Crect x='2' y='7' width='4' height='3' fill='%23ffd23f'/%3E%3Crect x='3' y='7' width='3' height='1' fill='%23fff0b0'/%3E%3Crect x='6' y='7' width='7' height='3' fill='%23d84b3a'/%3E%3Crect x='6' y='7' width='5' height='1' fill='%23ff8a2b'/%3E%3Crect x='0' y='8' width='1' height='1' fill='%23ff8a2b'/%3E%3C/svg%3E"
+    />
+    <style>
+      /* The menus (lobby, room, chat) wear the HUD's skin (docs/ART.md): bevelled
+         metal-and-plastic panels on a dark blue board, hard 1 px outlines, rivets in the
+         corners, one amber accent. Nothing here is round, nothing here is soft: the
+         canvas half of the game is pixel art, and so is this half. */
+      :root {
+        color-scheme: dark;
+        --bg: #0b1220;
+        --bg-deep: #070d18;
+        --fg: #dfe7ef;
+        --muted: #93a3b3;
+        --dim: #5b6874;
+        --accent: #ffd23f;
+        --accent-dark: #b4620e;
+        --good: #7cc45a;
+        --warn: #ff7b6b;
+        --team-a: #6fd1ff;
+        --team-b: #ffa45c;
+
+        /* The plate: face, its lit top band, the two bevel edges and the outline. */
+        --plate: #1b2a3e;
+        --plate-top: #24374f;
+        --plate-deep: #142031;
+        --bevel-light: #46648a;
+        --bevel-dark: #0a1017;
+        --outline: #050a12;
+        --recess: #0d1622;
+
+        --panel: rgba(8, 12, 18, 0.72);
+        --panel-edge: rgba(223, 231, 239, 0.25);
+
+        /* One rivet, as a background image: a lit pixel over a dome over a shadow. */
+        --rivet: radial-gradient(
+          circle at 40% 35%,
+          #dfe9f2 0 28%,
+          #8e9dae 28% 62%,
+          #10141c 62% 100%,
+          transparent 100%
+        );
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+        overflow: hidden;
+        /* No rubber-band scroll past the edges, no pull-to-refresh: a drag on this page
+           is a camera pan or a thumb on a button, never a scroll of the page itself. */
+        overscroll-behavior: none;
+        /* A tap is a tap: no 300 ms wait for a second one, and no zoom when it comes. */
+        touch-action: manipulation;
+        /* A long press is how a shot is charged, not how text is selected or how iOS
+           offers to copy a link. */
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      /* …except in the fields, where selecting text is the whole point. */
+      input,
+      textarea {
+        -webkit-user-select: text;
+        user-select: text;
+      }
+      /* The board the menus sit on: a deep blue wash, a faint grid, and a row of
+         scanlines so the page belongs to the same machine as the game. */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+          radial-gradient(circle at 50% 0%, rgba(62, 108, 160, 0.35), transparent 62%),
+          repeating-linear-gradient(
+            0deg,
+            rgba(255, 255, 255, 0.022) 0 1px,
+            transparent 1px 3px
+          ),
+          repeating-linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.016) 0 1px,
+            transparent 1px 32px
+          ),
+          repeating-linear-gradient(
+            0deg,
+            rgba(255, 255, 255, 0.016) 0 1px,
+            transparent 1px 32px
+          ),
+          linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+        z-index: 0;
+      }
+      #app {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: auto;
+        z-index: 1;
+        /* Keep every screen out from under the notch and the home indicator. The canvas
+           fit (render/canvas.ts) reads the same four insets, so the backbuffer is sized
+           for the room this padding actually leaves. */
+        padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+          env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+      }
+      /* The backbuffer is 800 px wide and as tall as the screen's aspect asks for; it is
+         upscaled to fit and must never be smoothed. */
+      canvas {
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+        display: block;
+      }
+
+      /* --- the skin --------------------------------------------------------- */
+      /* A raised plate. The outline is the outer ring, the bevel is the two inset
+         edges, and the four rivets are a background image so no element carries them. */
+      .plate,
+      .card,
+      .btn,
+      .item-slot,
+      .mobile-tile,
+      .end-panel,
+      .code-box {
+        border: 1px solid var(--outline);
+        box-shadow:
+          inset 1px 1px 0 0 var(--bevel-light),
+          inset -1px -1px 0 0 var(--bevel-dark);
+      }
+      .card,
+      .end-panel {
+        background-color: var(--plate);
+        background-image: var(--rivet), var(--rivet), var(--rivet), var(--rivet),
+          linear-gradient(180deg, var(--plate-top) 0 28%, var(--plate) 28% 100%);
+        background-size: 4px 4px, 4px 4px, 4px 4px, 4px 4px, auto;
+        background-position: 5px 5px, calc(100% - 5px) 5px, 5px calc(100% - 5px),
+          calc(100% - 5px) calc(100% - 5px), 0 0;
+        background-repeat: no-repeat;
+      }
+
+      /* --- menus ------------------------------------------------------------ */
+      .menu {
+        width: min(60rem, 100%);
+        max-height: 100%;
+        overflow: auto;
+        /* The containing block for the visually hidden labels (\`.sr-only\`, which are
+           absolute). Without it they hung off \`#app\` at their place in the scrolled
+           content, made \`#app\` itself scrollable, and a fling past the end of the room
+           on a phone chained into it and slid the whole screen off into an empty board. */
+        position: relative;
+        /* A fling that reaches the end stops there rather than scrolling whatever is
+           underneath. */
+        overscroll-behavior: contain;
+        padding: 1.6rem 1.5rem 2.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.9rem;
+        font-size: 13px;
+      }
+      .brand {
+        display: flex;
+        align-items: flex-end;
+        gap: 0.9rem;
+        flex-wrap: wrap;
+      }
+      .brand canvas {
+        display: block;
+        filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.55));
+      }
+      /* The wordmark is the title; the text one stays for screen readers and tabs. */
+      .title {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
+      .tagline {
+        color: var(--muted);
+        margin: 0 0 0.35rem;
+        letter-spacing: 0.06em;
+      }
+      .muted {
+        color: var(--muted);
+        margin: 0;
+      }
+      .hint {
+        color: var(--dim);
+        font-size: 11px;
+      }
+      .message {
+        margin: 0;
+        min-height: 1.2em;
+        color: var(--good);
+      }
+      .message.bad {
+        color: var(--warn);
+      }
+      .status {
+        margin: 0;
+        min-height: 1.2em;
+        color: var(--dim);
+      }
+      .cards,
+      .columns {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+      .cards > *,
+      .columns > * {
+        flex: 1 1 18rem;
+      }
+      .card {
+        padding: 0.9rem 1rem 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.7rem;
+      }
+      .card-title {
+        margin: 0 0 0.2rem;
+        font-size: 12px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--accent);
+        text-shadow: 0 1px 0 #000;
+        border-bottom: 1px solid var(--bevel-dark);
+        box-shadow: 0 1px 0 0 rgba(70, 100, 138, 0.5);
+        padding-bottom: 0.4rem;
+      }
+      .labelled {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+      }
+      .labelled[hidden] {
+        display: none;
+      }
+      .label {
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .row {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      /* A field is a hole in the plate: the bevel runs the other way. */
+      .field {
+        font-family: inherit;
+        /* 16 px exactly: iOS zooms the whole page in when a field smaller than that is
+           focused, and never zooms back out. Everything else on these screens is 13 px,
+           so this is the one deliberate exception. */
+        font-size: 16px;
+        color: var(--fg);
+        background: var(--recess);
+        border: 1px solid var(--outline);
+        box-shadow:
+          inset 1px 1px 0 0 var(--bevel-dark),
+          inset -1px -1px 0 0 rgba(70, 100, 138, 0.45);
+        padding: 0.5rem 0.6rem;
+        min-width: 0;
+      }
+      .field:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow:
+          inset 1px 1px 0 0 var(--bevel-dark),
+          inset -1px -1px 0 0 rgba(70, 100, 138, 0.45),
+          0 0 0 1px var(--accent);
+      }
+      .code-input {
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+      }
+      /* A button is a key: it goes down when it is pressed. */
+      .btn {
+        font: inherit;
+        color: var(--fg);
+        background-color: var(--plate);
+        background-image: linear-gradient(180deg, var(--plate-top) 0 42%, var(--plate) 42% 100%);
+        padding: 0.5rem 0.9rem;
+        cursor: pointer;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        font-size: 12px;
+        text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6);
+      }
+      @media (hover: hover) {
+        .btn:hover:not(:disabled) {
+          background-image: linear-gradient(180deg, #2c4462 0 42%, #223349 42% 100%);
+          color: #fff;
+        }
+      }
+      .btn:active:not(:disabled) {
+        box-shadow:
+          inset 1px 1px 0 0 var(--bevel-dark),
+          inset -1px -1px 0 0 var(--bevel-light);
+        transform: translate(1px, 1px);
+      }
+      .btn:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+      .btn[hidden] {
+        display: none;
+      }
+      .btn.primary {
+        color: #1a1204;
+        background-image: linear-gradient(180deg, #ffe27a 0 42%, #f0a020 42% 100%);
+        box-shadow:
+          inset 1px 1px 0 0 #fff3c4,
+          inset -1px -1px 0 0 #8a4a08;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+      }
+      @media (hover: hover) {
+        .btn.primary:hover:not(:disabled) {
+          background-image: linear-gradient(180deg, #fff3c4 0 42%, #ffc12c 42% 100%);
+          color: #1a1204;
+        }
+      }
+      .btn.ghost {
+        background-image: none;
+        background-color: transparent;
+        color: var(--muted);
+        box-shadow: none;
+        border-color: rgba(70, 100, 138, 0.6);
+      }
+      .btn.on {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .btn.team-a.on {
+        border-color: var(--team-a);
+        color: var(--team-a);
+      }
+      .btn.team-b.on {
+        border-color: var(--team-b);
+        color: var(--team-b);
+      }
+      .btn.small {
+        padding: 0.25rem 0.55rem;
+        font-size: 11px;
+      }
+
+      /* --- room ------------------------------------------------------------- */
+      .room-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+      .code-box {
+        display: flex;
+        flex-direction: column;
+        padding: 0.35rem 0.8rem 0.5rem;
+        background-color: var(--plate-deep);
+        background-image: linear-gradient(180deg, var(--plate) 0 30%, var(--plate-deep) 30% 100%);
+      }
+      .code {
+        font-size: 2rem;
+        letter-spacing: 0.4em;
+        color: var(--accent);
+        text-shadow: 0 2px 0 #000;
+      }
+      .copied {
+        color: var(--good);
+        font-size: 11px;
+      }
+      .room-header .row {
+        margin-left: auto;
+      }
+      /* --- the item loadout (DESIGN §4) -------------------------------------- */
+      /* Six columns, so a two-slot item can simply span two of them. */
+      .items {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 0.35rem;
+        width: 100%;
+      }
+      .item-slot {
+        height: 3.4rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.15rem;
+        background-color: var(--recess);
+        box-shadow:
+          inset 1px 1px 0 0 var(--bevel-dark),
+          inset -1px -1px 0 0 rgba(70, 100, 138, 0.35);
+        color: var(--dim);
+        font-size: 10px;
+        letter-spacing: 0.04em;
+        text-align: center;
+        overflow: hidden;
+      }
+      .item-slot canvas {
+        image-rendering: pixelated;
+      }
+      /* The slot is a sixth of a row: the icon carries the meaning and the name is a
+         reminder, so it shrinks rather than pushing the plate wider. */
+      .item-slot .item-name {
+        font-size: 9px;
+        line-height: 1.1;
+        letter-spacing: 0;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        text-align: center;
+      }
+      button.item-slot {
+        font-family: inherit;
+        cursor: pointer;
+        padding: 0 0.2rem;
+      }
+      .item-slot.filled {
+        color: var(--fg);
+        background-color: #1d3220;
+        background-image: linear-gradient(180deg, #2b4a2f 0 45%, #1d3220 45% 100%);
+        box-shadow:
+          inset 1px 1px 0 0 #5f8f5a,
+          inset -1px -1px 0 0 var(--bevel-dark);
+      }
+      /* "Click to remove" is a hover colour on a desktop and a caption on a phone (the
+         hint under the bar says it), so the red state is hover-only on purpose. */
+      @media (hover: hover) {
+        .item-slot.filled:hover:enabled {
+          background-image: linear-gradient(180deg, #4a2b2b 0 45%, #33201e 45% 100%);
+          box-shadow:
+            inset 1px 1px 0 0 #a45a4f,
+            inset -1px -1px 0 0 var(--bevel-dark);
+          color: var(--warn);
+        }
+      }
+      .item-slot:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      .item-picker {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        margin-top: 0.5rem;
+      }
+      .btn.item-pick {
+        display: grid;
+        grid-template-columns: 24px auto;
+        grid-template-rows: auto auto auto;
+        column-gap: 0.4rem;
+        align-items: center;
+        padding: 0.3rem 0.5rem;
+        line-height: 1.2;
+        text-transform: none;
+        letter-spacing: 0.04em;
+      }
+      .btn.item-pick canvas {
+        grid-row: 1 / span 3;
+        image-rendering: pixelated;
+      }
+      .item-name {
+        color: var(--fg);
+        text-align: left;
+      }
+      .item-cost {
+        color: var(--dim);
+        font-size: 10px;
+        text-align: left;
+      }
+      /* What the item does, in a few words: the line a phone player reads, having no hover. */
+      .item-tagline {
+        color: var(--accent);
+        font-size: 11px;
+        text-align: left;
+      }
+      /* The card under the picker: the item last pointed at, focused or tapped. */
+      .item-info {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        column-gap: 0.6rem;
+        align-items: center;
+        margin-top: 0.5rem;
+        padding: 0.5rem 0.7rem;
+        min-height: 4.2rem;
+      }
+      .item-info-icon canvas {
+        display: block;
+        image-rendering: pixelated;
+      }
+      .item-info-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0.2rem 0.6rem;
+      }
+      .item-info-cost {
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .item-info-effect {
+        grid-column: 1 / -1;
+        margin: 0.35rem 0 0;
+        color: var(--fg);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+      .item-info > .item-info-effect:only-child {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      /* --- chat ------------------------------------------------------------- */
+      .chat {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+      .chat-log {
+        height: 9rem;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        font-size: 12px;
+        background: var(--recess);
+        border: 1px solid var(--outline);
+        box-shadow: inset 1px 1px 0 0 var(--bevel-dark);
+        padding: 0.35rem 0.45rem;
+      }
+      .chat-line {
+        display: flex;
+        gap: 0.5rem;
+      }
+      .chat-from {
+        color: var(--accent);
+        flex: 0 0 auto;
+      }
+      .chat-text {
+        color: var(--fg);
+        word-break: break-word;
+      }
+      .chat-line.note .chat-text {
+        color: var(--dim);
+        font-style: italic;
+      }
+      /* The input and its SEND key: one row, hidden together. A phone keyboard's return
+         key sends too, but a visible key is the one a thumb can find. */
+      .chat-row {
+        display: flex;
+        gap: 0.4rem;
+      }
+      .chat-row[hidden] {
+        display: none;
+      }
+      .chat-row .chat-input {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+      .btn.chat-send {
+        flex: 0 0 auto;
+        padding: 0.5rem 0.8rem;
+      }
+
+      /* --- match overlays --------------------------------------------------- */
+      .stage {
+        position: relative;
+        display: inline-block;
+      }
+      /* `--hud-bar-h` is the bottom bar's height in CSS px, published by MatchView on
+         every resize: the bar is laid out in backbuffer px and this layer in CSS px, and
+         the two only agree through that number. The literal is the desktop fallback. */
+      /* `--kb-inset` is how much of the window the virtual keyboard has taken
+         (ui/viewport.ts). Without it the chat line opens *under* the keyboard on a
+         phone, which is the one place it must never be. */
+      .chat-overlay {
+        position: absolute;
+        left: 8px;
+        bottom: calc(var(--hud-bar-h, 100px) + 8px + var(--kb-inset, 0px));
+        width: min(22rem, 60%);
+        pointer-events: none;
+      }
+      .chat-overlay .chat-log {
+        height: auto;
+        max-height: 7rem;
+        text-shadow: 0 1px 0 #000;
+        background: rgba(8, 14, 22, 0.55);
+        border-color: rgba(5, 10, 18, 0.8);
+      }
+      /* Before the first line the log is only its padding and border: a dark empty
+         strip across the board, just above the bar. */
+      .chat-overlay .chat-log:empty {
+        display: none;
+      }
+      /* A while after the last line, with the chat line closed (DESIGN §7 item 167). */
+      .chat-overlay .chat-log {
+        transition: opacity 0.6s ease-out;
+      }
+      .chat-overlay.quiet .chat-log {
+        opacity: 0;
+      }
+      .chat-overlay .chat-row {
+        pointer-events: auto;
+      }
+      .leave-overlay {
+        position: absolute;
+        right: 8px;
+        top: 8px;
+      }
+      /*
+       * Forfeit sits over the sky rather than over a panel, where a ghost button's dim
+       * text on nothing is barely legible at true 1x. Give it the bevelled plate the
+       * other corner panels wear, and full-strength text.
+       */
+      .leave-overlay .btn.ghost {
+        color: var(--fg);
+        background-color: var(--plate);
+        background-image: linear-gradient(180deg, var(--plate-top) 0 42%, var(--plate) 42% 100%);
+        border-color: var(--outline);
+        box-shadow:
+          inset 1px 1px 0 0 var(--bevel-light),
+          inset -1px -1px 0 0 var(--bevel-dark);
+        text-shadow: 0 1px 0 rgba(0, 0, 0, 0.7);
+      }
+      @media (hover: hover) {
+        .leave-overlay .btn.ghost:hover:not(:disabled) {
+          background-image: linear-gradient(180deg, #2c4462 0 42%, #223349 42% 100%);
+          color: #fff;
+        }
+      }
+      .end-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(5, 8, 12, 0.55);
+      }
+      .end-overlay[hidden] {
+        display: none;
+      }
+      .end-panel {
+        padding: 1.5rem 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+        align-items: center;
+      }
+      .end-title {
+        margin: 0;
+        font-size: 1.8rem;
+        letter-spacing: 0.2em;
+        color: var(--accent);
+        text-shadow: 0 2px 0 #000;
+      }
+      .net-overlay {
+        position: fixed;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+        background: var(--warn);
+        color: #10141a;
+        padding: 0.3rem 1rem;
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        border: 1px solid var(--outline);
+        border-top: none;
+      }
+      .net-overlay[hidden] {
+        display: none;
+      }
+
+      /* --- phones ------------------------------------------------------------ */
+      /*
+       * Everything below is the landscape-phone pass (DESIGN §7 item 149). The menus
+       * are the same DOM at every size; what changes is that a 667x375 window has no
+       * room for a four-row picker, a chat log a third of the screen tall and a column
+       * of 12 px labels, so the picker and the item shelf become *strips* that scroll
+       * sideways, everything a thumb presses grows past 44 px, and the page scrolls.
+       *
+       * Chosen by height rather than by width, the same rule the canvas HUD uses: the
+       * height is the aspect, and "short" means "a phone lying on its side".
+       */
+      @media (pointer: coarse) {
+        /* A finger cannot hit a 26 px key, whatever the screen it is on. */
+        .btn,
+        .field,
+        select.field {
+          min-height: 44px;
+        }
+        /*
+         * The one exception, and it stays an exception: a `.small` key is a secondary
+         * control inside a card, where the card's own padding is the rest of the target.
+         * Nothing that floats over the match canvas may wear it — see the two rules
+         * below, which come *after* this one on purpose (DESIGN §7 item 160).
+         */
+        .btn.small {
+          min-height: 36px;
+        }
+        .mobile-tile {
+          min-height: 44px;
+        }
+        /* Fingers: the controls that live on top of the match canvas are DOM, so they
+           do not grow with the HUD's compact variant and have to be sized here. */
+        .leave-overlay .btn,
+        .chat-overlay .chat-input,
+        .chat-overlay .chat-send {
+          min-height: 44px;
+        }
+        .chat-overlay .chat-log {
+          max-height: 5rem;
+        }
+        /* The chat line is wider than a desktop needs it: a phone's keyboard is the
+           width of the screen, and typing into a 22 rem box beside it is fiddly. */
+        .chat-overlay {
+          width: min(26rem, 78%);
+        }
+        /* Momentum, and a scrollbar that does not eat a row. */
+        .menu,
+        .mobile-grid,
+        .item-picker,
+        .chat-log {
+          -webkit-overflow-scrolling: touch;
+        }
+      }
+
+      @media (orientation: landscape) and (max-height: 520px) {
+        #app {
+          /* Scroll from the top rather than centring a page taller than the window. */
+          align-items: flex-start;
+        }
+        .menu {
+          padding: 0.5rem 0.6rem 1.2rem;
+          gap: 0.5rem;
+          font-size: 12px;
+        }
+        /* The wordmark is a canvas with its size in attributes; cap it in CSS so the
+           title cannot eat a third of a 375 px tall screen. */
+        .brand canvas {
+          max-width: 30vw;
+          height: auto;
+        }
+        /* The strapline is for somebody arriving at a desktop. A phone that is already
+           in the lobby knows what this is, and the row costs a whole control. */
+        .tagline {
+          display: none;
+        }
+        .lobby-footer .hint {
+          font-size: 11px;
+        }
+        /*
+         * A caption over its field costs 18 px it does not need on a short screen. Put
+         * the two side by side wherever the control is a single field — `:has` keeps
+         * the rule off the grids and button rows, whose captions have to stay above
+         * them; a browser without `:has` simply keeps the taller column layout.
+         */
+        .labelled:has(> .field, > .map-field) {
+          flex-direction: row;
+          align-items: center;
+          gap: 0.5rem;
+        }
+        .labelled:has(> .field, > .map-field) > .label {
+          flex: 0 0 3.2rem;
+        }
+        .labelled:has(> .field, > .map-field) > :is(.field, .map-field) {
+          flex: 1 1 auto;
+          min-width: 0;
+        }
+        .card {
+          padding: 0.5rem 0.6rem 0.6rem;
+          gap: 0.45rem;
+        }
+        .card-title {
+          padding-bottom: 0.25rem;
+        }
+        .cards,
+        .columns {
+          gap: 0.5rem;
+        }
+        .room-header {
+          gap: 0.5rem;
+        }
+        .code {
+          font-size: 1.4rem;
+          letter-spacing: 0.3em;
+        }
+        .item-slot {
+          height: 2.8rem;
+        }
+        /* The same treatment for the eight items you can pick from. */
+        .item-picker {
+          flex-wrap: nowrap;
+          overflow-x: auto;
+          min-width: 0;
+          padding-bottom: 0.3rem;
+        }
+        .btn.item-pick {
+          flex: 0 0 auto;
+        }
+        .chat-log {
+          height: 4.5rem;
+        }
+        /*
+         * Ready and Start are the two keys that end this screen, so they get the width.
+         * They do *not* float: this row used to be `position: sticky; bottom: 0`, and
+         * at the scroll position the room opens on it sat exactly over the item shelf,
+         * so every tap meant for Teleport or Bandage pressed Ready — or, on the host,
+         * Start match (DESIGN §7 item 161). A sticky row inside a scrolling card always
+         * covers whatever happens to be at the bottom of the window; the row is the
+         * next thing under the shelf in the flow anyway, so scrolling to one shows the
+         * other.
+         */
+        .room-actions {
+          gap: 0.5rem;
+          padding-top: 0.35rem;
+        }
+        .room-actions .btn {
+          flex: 1 1 8rem;
+          min-height: 44px;
+          font-size: 13px;
+        }
+      }
+
+      /* --- the Blender UI kit on the menus (docs/ART.md §12) ------------------ */
+      /*
+       * `installUiKitCss()` (render/uiKit.ts) turns every nine-slice of the kit into a
+       * class — `.uk-panel`, `.uk-card-selected`, `.uk-btn` … — drawn as a border-image
+       * at `--uk-scale` CSS px per kit pixel, and `main.ts` puts `uk-ready` on the root
+       * once it is in. Until then (or if the atlas never loads) the menus keep the
+       * hand-drawn plates above; from then on those plates' own gradients and bevels
+       * are switched off here, so they cannot show through the kit's rounded corners.
+       * The id is for weight only: it outranks every plate rule, hover states included.
+       */
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
+      /* Text in the HUD's pixel face (ui/dom.ts `pixelLabel`): a canvas, never smoothed. */
+      .pixel-label {
+        display: inline-flex;
+        align-items: center;
+        line-height: 1;
+      }
+      .pixel-label canvas {
+        display: block;
+      }
+      .uk-ready #app .menu :is(
+          .btn,
+          .card,
+          .mobile-tile,
+          .item-slot,
+          .code-box,
+          .field,
+          .chat-log,
+          .player,
+          .player-slot,
+          .player-ready
+        ) {
+        background: none;
+        box-shadow: none;
+      }
+      .uk-ready #app .menu .btn:active:not(:disabled) {
+        transform: none;
+      }
+      .menu {
+        --uk-scale: 2;
+      }
+      .menu .btn {
+        font-weight: bold;
+        font-size: 13px;
+        min-height: 44px;
+        padding: 0 0.9rem;
+      }
+      .uk-ready #app .menu .btn {
+        padding: 0 0.5rem;
+        color: #fff;
+        text-shadow: 0 2px 0 rgba(0, 0, 0, 0.55);
+      }
+      .uk-ready #app .menu .uk-btn-gold {
+        color: #2a1604;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+      }
+      .uk-ready #app .menu .btn:disabled {
+        opacity: 1;
+        color: #aab4bf;
+        text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+      }
+      .menu .btn.small {
+        min-height: 36px;
+        --uk-scale: 1;
+      }
+      /* On a finger the kit's small key still has to be 44 px: the lobby's Fullscreen
+         and the room's Leave wear it, and they sit in the header, where no card padding
+         makes up the difference (the item-160 trap again, at the kit's specificity). */
+      @media (pointer: coarse) {
+        .menu .btn.small {
+          min-height: 44px;
+        }
+      }
+      .uk-ready #app .menu .btn.team-a.on {
+        color: var(--team-a);
+      }
+      .uk-ready #app .menu .btn.team-b.on {
+        color: var(--team-b);
+      }
+      /* Keyboard focus is a gold ring outside the frame, never the browser's own blur. */
+      .menu :is(button, select, input):focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+      .uk-ready #app .menu .field {
+        padding: 0.15rem 0.3rem;
+        min-height: 44px;
+      }
+      .uk-ready #app .menu .field:focus {
+        border-color: transparent;
+      }
+      .menu .card {
+        padding: 0.35rem 0.6rem 0.8rem;
+      }
+      /* The ribbon a card's title sits on. */
+      .menu .card-title {
+        align-self: center;
+        display: flex;
+        justify-content: center;
+        margin: 0 0 0.2rem;
+        padding: 0 0.4rem;
+        min-width: 10rem;
+      }
+      .uk-ready #app .menu .card-title {
+        border-bottom-style: solid;
+        box-shadow: none;
+      }
+      .menu .label {
+        color: #aab8c6;
+      }
+
+      /* --- lobby -------------------------------------------------------------- */
+      .menu.lobby {
+        width: min(54rem, 100%);
+      }
+      .lobby .brand {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.3rem;
+      }
+      .lobby .tagline {
+        margin: 0;
+      }
+      .lobby-board {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+        padding: 0.5rem 0.9rem 0.6rem;
+        background: var(--plate);
+      }
+      .lobby-board .cards > .card {
+        --uk-scale: 1;
+        padding: 0.4rem 0.8rem 0.8rem;
+      }
+      .lobby-board .card-title {
+        --uk-scale: 2;
+      }
+      /* The two doors out of the lobby are the biggest keys on it. */
+      .create-row {
+        display: flex;
+        gap: 0.45rem;
+      }
+      .create-row > .btn {
+        flex: 3 1 0;
+        min-width: 0;
+        min-height: 52px;
+        font-size: 15px;
+      }
+      .create-row > .btn.practice {
+        flex: 2 1 0;
+      }
+      .lobby-board .card > .btn {
+        min-height: 52px;
+        font-size: 15px;
+      }
+      .lobby-board .status:empty {
+        display: none;
+      }
+      /* Open rooms: a short scrolling list above the code field, one row per room. */
+      .open-rooms {
+        list-style: none;
+        margin: 0;
+        padding: 0.25rem;
+        max-height: 9.5rem;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+      .open-room {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.2rem 0.3rem 0.2rem 0.5rem;
+        background: var(--plate-deep);
+        border: 1px solid var(--bevel-dark);
+      }
+      .open-room-info {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .open-room-host {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--fg);
+      }
+      .open-room-meta {
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .open-rooms-empty {
+        padding: 0.35rem 0.5rem;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .code-row {
+        display: flex;
+        align-items: flex-end;
+        gap: 0.5rem;
+      }
+      .code-row > .labelled {
+        flex: 1;
+        min-width: 0;
+      }
+      .lobby-board .code-row > .btn {
+        min-height: 44px;
+        min-width: 6rem;
+      }
+      .check-field {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        color: var(--muted);
+        cursor: pointer;
+      }
+      .check-field input {
+        accent-color: var(--accent);
+        width: 1rem;
+        height: 1rem;
+        margin: 0;
+      }
+      .lobby .lobby-footer {
+        justify-content: center;
+      }
+      /* The roster idling on a strip of grass and earth: the game, before the game. */
+      .lobby-parade {
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        gap: 2px;
+        overflow: hidden;
+        padding-bottom: 8px;
+        background: linear-gradient(
+          to top,
+          #3d2a1a 0 3px,
+          #5a3d24 3px 5px,
+          #4c9a3a 5px 7px,
+          #7cc45a 7px 8px,
+          transparent 8px
+        );
+      }
+      .lobby-parade canvas {
+        flex: 0 0 auto;
+      }
+
+      /* --- room --------------------------------------------------------------- */
+      .menu.room {
+        width: min(76rem, 100%);
+      }
+      .room-header {
+        justify-content: space-between;
+      }
+      .code-cluster {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        flex-wrap: wrap;
+      }
+      .uk-ready #app .code-box {
+        padding: 0 0.6rem;
+      }
+      .code-box .label {
+        font-size: 10px;
+      }
+      .code {
+        font-weight: bold;
+      }
+      .room-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+        /* The picker is what a player came here to do, so it takes the top left; the
+           seats and the setup share the column beside it. */
+        grid-template-areas:
+          "picker players"
+          "picker setup"
+          "chat setup";
+        gap: 0.9rem;
+        align-items: start;
+      }
+      .players-panel {
+        grid-area: players;
+      }
+      .picker-panel {
+        grid-area: picker;
+      }
+      .setup-panel {
+        grid-area: setup;
+      }
+      .chat-panel {
+        grid-area: chat;
+      }
+
+      /* The map picker: the dropdown with the chosen map's thumbnail beside it
+         (ui/mapThumb.ts), in the gold frame the room code wears. The thumbnail is
+         pixel art at 160 x 90: shown 1:1 where there is room, halved on a phone. */
+      .map-field {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+      }
+      .map-field > .field {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+      .map-thumb {
+        --uk-scale: 1;
+        position: relative;
+        flex: 0 0 auto;
+        display: grid;
+        place-items: center;
+        width: 160px;
+        height: 90px;
+        box-sizing: content-box;
+        background: var(--recess);
+        border: 2px solid var(--gold, #ffd23f);
+        overflow: hidden;
+      }
+      .map-thumb img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        image-rendering: pixelated;
+      }
+      .map-thumb-name {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        padding: 0.2rem;
+        font-size: 10px;
+        text-align: center;
+        color: var(--muted);
+      }
+      .map-thumb img:not([hidden]) + .map-thumb-name {
+        display: none;
+      }
+      /* The lobby's New room card is small; its thumbnail is a hint, not a poster. */
+      .lobby-map-thumb {
+        width: 96px;
+        height: 54px;
+      }
+      .lobby-map-thumb img,
+      .map-thumb.small img {
+        image-rendering: auto;
+      }
+
+      /* One card per seat: the mobile idling on the left; team, crown, name, mobile,
+         loadout and the ready badge beside it. */
+      .players {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(13.5rem, 1fr));
+        gap: 0.45rem;
+      }
+      .player,
+      .player-slot {
+        --uk-scale: 1;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        grid-template-areas:
+          "art top"
+          "art nick"
+          "art mobile"
+          "art items"
+          "art status";
+        column-gap: 0.5rem;
+        row-gap: 0.15rem;
+        align-items: center;
+        padding: 0.1rem 0.3rem;
+        background: var(--plate-deep);
+        border: 1px solid var(--outline);
+      }
+      .player-slot {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        min-height: 5.6rem;
+      }
+      .player-art {
+        grid-area: art;
+      }
+      .player-nick {
+        grid-area: nick;
+      }
+      .player-mobile {
+        grid-area: mobile;
+      }
+      .player-items {
+        grid-area: items;
+      }
+      .player-status {
+        grid-area: status;
+      }
+      .player-top {
+        grid-area: top;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.3rem;
+      }
+      .player-team {
+        display: inline-flex;
+        padding: 2px 3px;
+        background: var(--dim);
+        border: 1px solid var(--outline);
+      }
+      .player.team-a .player-team {
+        background: var(--team-a);
+      }
+      .player.team-b .player-team {
+        background: var(--team-b);
+      }
+      .player-art {
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+      }
+      .player.offline .player-art {
+        opacity: 0.45;
+        filter: grayscale(1);
+      }
+      .player-nick {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 14px;
+        font-weight: bold;
+      }
+      .player-mobile {
+        color: var(--muted);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .player-items {
+        display: flex;
+        gap: 2px;
+        min-height: 16px;
+      }
+      .player-status {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+      .player-ready {
+        --uk-scale: 1;
+        display: inline-flex;
+        align-items: center;
+        min-height: 26px;
+        padding: 0 5px;
+        border: 1px solid var(--outline);
+        background: var(--plate);
+      }
+      .player-ready.yes {
+        background: var(--accent);
+      }
+      .player-conn {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        color: var(--warn);
+        font-size: 11px;
+      }
+
+      /* Practice bots (DESIGN §11): a badge beside the team, the difficulty beside the
+         ready badge, and on the host's screen a row of keys under the card. */
+      .player-bot {
+        display: inline-flex;
+        padding: 2px 3px;
+        margin-right: auto;
+        margin-left: 0.3rem;
+        background: #9aa8b6;
+        border: 1px solid var(--outline);
+      }
+      .player-difficulty {
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .bot-controls {
+        grid-column: 1 / -1;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.3rem;
+        padding: 0.2rem 0 0.25rem;
+      }
+      .bot-controls .field {
+        flex: 1 1 6.5rem;
+        min-width: 0;
+      }
+      .bot-controls .btn {
+        flex: 0 0 auto;
+      }
+      .player-slot .slot-text {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.2rem;
+      }
+      .slot-bots {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.3rem;
+      }
+
+      /* --- the mobile picker --------------------------------------------------- */
+      .picker {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 18rem;
+        gap: 0.7rem;
+        align-items: start;
+      }
+      .mobile-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+        gap: 0.35rem;
+        padding: 0.15rem;
+      }
+      .mobile-tile {
+        --uk-scale: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        padding: 0;
+        min-height: 44px;
+        background: var(--recess);
+        border: 1px solid var(--outline);
+        color: #c9d4de;
+        font: inherit;
+        font-size: 10px;
+        font-weight: bold;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .mobile-tile .tile-name {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding-bottom: 1px;
+      }
+      @media (hover: hover) {
+        .mobile-tile:hover:not(:disabled) {
+          filter: brightness(1.18);
+          color: #fff;
+        }
+      }
+      .mobile-tile.on {
+        color: var(--accent);
+      }
+      .mobile-tile:disabled {
+        cursor: default;
+        opacity: 0.7;
+      }
+      .tile-random {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        font-weight: bold;
+        color: var(--accent);
+        text-shadow: 0 2px 0 #000;
+      }
+
+      /* The chosen mobile, up close: art, name, class, bars, and its three shots. */
+      .info-box {
+        --uk-scale: 2;
+        padding: 0.2rem 0.3rem 0.3rem;
+        background: var(--plate-deep);
+        border: 1px solid var(--outline);
+      }
+      .mobile-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .info-head {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem;
+      }
+      .info-art {
+        --uk-scale: 1;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding: 2px 6px;
+        background: var(--recess);
+      }
+      .info-title {
+        align-self: stretch;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.3rem;
+      }
+      .info-class {
+        color: var(--muted);
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+      }
+      .info-blurb {
+        margin: 0;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.45;
+        text-align: center;
+      }
+      .stats {
+        align-self: stretch;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 0.3rem 0.4rem;
+      }
+      .stat {
+        display: contents;
+      }
+      .stat-bar {
+        --uk-scale: 2;
+        position: relative;
+        height: 16px;
+        background: var(--recess);
+      }
+      .stat-fill {
+        height: 8px;
+        min-width: 0;
+        overflow: hidden;
+      }
+      .stat-fill > canvas {
+        width: 100% !important;
+        height: 100% !important;
+      }
+      .stat-value {
+        font-size: 11px;
+        color: var(--fg);
+        text-align: right;
+        white-space: nowrap;
+      }
+      .weapons {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+      }
+      .weapon {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .weapon-card {
+        --uk-scale: 1;
+        flex: 0 0 auto;
+        width: 44px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0;
+        background: var(--recess);
+      }
+      .weapon-text {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        min-width: 0;
+      }
+      .weapon-name {
+        color: var(--fg);
+        font-weight: bold;
+        font-size: 12px;
+      }
+      .weapon-ss .weapon-name {
+        color: var(--accent);
+      }
+      .weapon-meta {
+        color: var(--muted);
+        font-size: 10px;
+        letter-spacing: 0.04em;
+      }
+
+      /* --- setup: items in the kit's slots, picked with gem keys ---------------- */
+      .menu .item-slot {
+        --uk-scale: 1;
+        height: 4rem;
+      }
+      .uk-ready #app .menu .item-slot {
+        color: #aab8c6;
+      }
+      .uk-ready #app .menu .item-slot.filled {
+        color: var(--fg);
+      }
+      @media (hover: hover) {
+        .uk-ready #app .menu .item-slot.filled:hover:enabled {
+          color: var(--warn);
+          filter: brightness(1.15);
+        }
+      }
+      .setup-panel .item-picker {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .menu .btn.item-pick {
+        --uk-scale: 1;
+        grid-template-columns: 32px minmax(0, 1fr);
+        min-height: 46px;
+        font-weight: normal;
+      }
+      .menu .btn.item-pick .item-name {
+        font-weight: bold;
+      }
+      .uk-ready #app .menu .btn.item-pick .item-cost {
+        color: #c3d3e6;
+      }
+      .uk-ready #app .menu .btn.item-pick:disabled .item-name,
+      .uk-ready #app .menu .btn.item-pick:disabled .item-tagline,
+      .uk-ready #app .menu .btn.item-pick:disabled .item-cost {
+        color: #aab4bf;
+      }
+      .room-actions .btn {
+        flex: 1 1 8rem;
+        min-height: 52px;
+        font-size: 15px;
+      }
+
+      /* --- phones: the same screens, one kit pixel per CSS pixel -------------- */
+      @media (orientation: landscape) and (max-height: 520px) {
+        .menu {
+          --uk-scale: 1;
+        }
+        .lobby .brand canvas {
+          max-width: 30vw;
+        }
+        .lobby-parade {
+          display: none;
+        }
+        .lobby-board {
+          gap: 0.45rem;
+          padding: 0.35rem 0.5rem 0.4rem;
+        }
+        .cards > * {
+          flex: 1 1 14rem;
+          min-width: 0;
+        }
+        .menu .card-title {
+          --uk-scale: 1;
+          min-width: 8rem;
+        }
+        .lobby-board .card-title {
+          --uk-scale: 1;
+        }
+        .menu .btn {
+          --uk-scale: 2;
+        }
+        .uk-ready #app .menu .field {
+          padding: 0 0.3rem;
+        }
+        .room-header .brand canvas {
+          max-width: 22vw;
+        }
+        .room-grid {
+          grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+          gap: 0.45rem;
+        }
+        .players {
+          grid-template-columns: minmax(0, 1fr);
+          gap: 0.3rem;
+        }
+        .player-nick {
+          font-size: 12px;
+        }
+        .player-mobile {
+          font-size: 10px;
+        }
+        .player-items {
+          display: none;
+        }
+        .player-slot {
+          min-height: 4.2rem;
+        }
+        .menu .item-slot {
+          height: 3.9rem;
+        }
+        /* The loadout bar is six columns in the narrower half of the room, which on a
+           568-667 px phone left a one-slot item 30-38 px wide — and a slot is removed by
+           tapping it. Each column keeps a finger's width and the bar scrolls sideways
+           instead, like the two shelves beside it. */
+        .items {
+          grid-template-columns: repeat(6, minmax(44px, 1fr));
+          overflow-x: auto;
+          padding-bottom: 0.3rem;
+        }
+        /* A sideways fling on any of the three strips ends at the strip's edge. */
+        .items,
+        .mobile-grid,
+        .item-picker {
+          overscroll-behavior-x: contain;
+        }
+        /* The picker becomes a shelf that scrolls sideways over the chosen mobile's card:
+           a grid three rows deep would cost the whole screen. */
+        .picker {
+          grid-template-columns: minmax(0, 1fr);
+          gap: 0.4rem;
+        }
+        .mobile-grid {
+          min-width: 0;
+          grid-auto-flow: column;
+          grid-template-columns: none;
+          grid-auto-columns: 90px;
+          overflow-x: auto;
+          overflow-y: hidden;
+          padding-bottom: 0.3rem;
+        }
+        .mobile-tile {
+          font-size: 9px;
+        }
+        .info-box {
+          --uk-scale: 1;
+          padding: 0.15rem 0.3rem;
+        }
+        .info-head {
+          flex-direction: row;
+          align-items: flex-start;
+        }
+        .info-title {
+          flex: 1 1 auto;
+          min-width: 0;
+          align-items: flex-start;
+          gap: 0.2rem;
+        }
+        .info-blurb {
+          text-align: left;
+        }
+        .stats {
+          gap: 0.15rem 0.35rem;
+        }
+        .stat-value {
+          font-size: 10px;
+        }
+        .weapons {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 0.3rem;
+        }
+        .weapon {
+          gap: 0.3rem;
+        }
+        .weapon-card {
+          width: 36px;
+        }
+        .weapon-name {
+          font-size: 10px;
+        }
+        .weapon-meta {
+          font-size: 9px;
+        }
+        .setup-panel .item-picker {
+          display: flex;
+        }
+        /* On a phone the thumbnail rides in the field's own row, no taller than
+           the field beside it (44 px), so the map costs no height at all. */
+        .map-thumb {
+          width: 64px;
+          height: 36px;
+        }
+        .map-thumb img {
+          image-rendering: auto;
+        }
+        .room-map-thumb {
+          width: 96px;
+          height: 54px;
+        }
+      }
+
+      /* --- landscape phones, with a finger ------------------------------------ */
+      /*
+       * The lobby on one screen. A 342-430 px tall phone opened it with Create room
+       * under the fold (the menu was 502 px tall): the wordmark was the biggest thing
+       * on the page, and the two ribbons and the footer paid for air a phone lacks.
+       */
+      @media (orientation: landscape) and (max-height: 430px) and (pointer: coarse) {
+        .menu.lobby {
+          padding-top: 0.35rem;
+          gap: 0.35rem;
+        }
+        /* The canvas carries its size inline, so only the caps can shrink it; with the
+           30vw width cap above already in force, capping the height as well would
+           squash the letters, and \`contain\` keeps their shape inside the smaller box. */
+        .lobby .brand canvas {
+          max-height: 44px;
+          object-fit: contain;
+        }
+        .lobby-board {
+          gap: 0.3rem;
+          padding: 0.3rem 0.5rem 0.35rem;
+        }
+        .lobby-board .cards {
+          gap: 0.4rem;
+        }
+        .lobby-board .cards > .card {
+          gap: 0.3rem;
+          padding: 0.25rem 0.6rem 0.45rem;
+        }
+        .open-rooms {
+          max-height: 6.5rem;
+        }
+      }
+      /*
+       * The room as rows rather than two columns. The setup card is the tallest thing
+       * in it, and beside it the chat card sat at the bottom of an empty column once a
+       * player scrolled down to the loadout and Ready. The picker and the seats still
+       * share the first row (they are about the same height); the setup takes the whole
+       * width under them, which also makes it shorter; the chat comes last.
+       */
+      @media (orientation: landscape) and (max-height: 520px) and (pointer: coarse) {
+        .room-grid {
+          grid-template-areas:
+            "picker players"
+            "setup setup"
+            "chat chat";
+          align-items: stretch;
+        }
+        .setup-panel,
+        .chat-panel {
+          align-self: start;
+        }
+        /* A floor for the small print: 9-10 px was hard to read at arm's length. */
+        .mobile-tile,
+        .item-cost,
+        .info-class,
+        .stat-value,
+        .weapon-name,
+        .weapon-meta,
+        .player-mobile {
+          font-size: 11px;
+        }
+      }
+
+      /* --- "rotate your phone" ----------------------------------------------- */
+      /*
+       * The board is 800 px wide and the HUD hangs off the bottom of it: portrait is not
+       * a layout this game has. Phones only — a tablet in portrait still has a window
+       * wider than the backbuffer, and a narrow desktop window is somebody's choice.
+       */
+      .rotate-note {
+        display: none;
+      }
+      @media (orientation: portrait) and (pointer: coarse) and (max-width: 560px) {
+        .rotate-note {
+          position: fixed;
+          inset: 0;
+          z-index: 50;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 0.6rem;
+          text-align: center;
+          padding: 2rem 1.5rem;
+          background: var(--bg-deep);
+        }
+        /* A phone, drawn rather than typed: no emoji font renders a handset the same
+           way twice, and this one has to turn. */
+        .rotate-note .rotate-icon {
+          width: 38px;
+          height: 66px;
+          border: 3px solid var(--accent);
+          border-top-width: 7px;
+          border-bottom-width: 7px;
+          background: var(--plate);
+          box-shadow: 0 2px 0 #000;
+          animation: rotate-hint 2.4s ease-in-out infinite;
+        }
+        .rotate-note h2 {
+          margin: 0;
+          font-size: 1.1rem;
+          letter-spacing: 0.2em;
+          text-transform: uppercase;
+          color: var(--accent);
+        }
+        .rotate-note p {
+          margin: 0;
+          color: var(--muted);
+          font-size: 12px;
+        }
+      }
+      @keyframes rotate-hint {
+        0%,
+        45% {
+          transform: rotate(0deg);
+        }
+        60%,
+        100% {
+          transform: rotate(90deg);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .rotate-note .rotate-icon {
+          animation: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <!-- Shown by a media query alone (see .rotate-note): no script runs to decide it, so
+         it is up before the bundle has loaded and gone the moment the phone turns. -->
+    <div class="rotate-note">
+      <div class="rotate-icon"></div>
+      <h2>Rotate your phone</h2>
+      <p>GunBros is played in landscape.</p>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>GunBros Admin</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6' fill='%232a78d6'/%3E%3C/svg%3E">
+<style>
+/* The admin portal (server/src/admin.ts). One file: the server sends it as it is. */
+:root {
+  color-scheme: light;
+  --bg: #f4f3ef;
+  --surface: #fcfcfb;
+  --surface-2: #f0efea;
+  --border: #e2e0d8;
+  --text: #0b0b0b;
+  --text-2: #52514e;
+  --text-3: #7a7973;
+  --grid: #e8e6de;
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --good: #0ca30c;
+  --warning: #fab219;
+  --critical: #d03b3b;
+  --good-bg: #e6f5e6;
+  --warning-bg: #fdf3dc;
+  --critical-bg: #fbe6e6;
+  --seq-0: #eef4fc;
+  --seq-1: #cde2fb;
+  --seq-2: #9ec5f4;
+  --seq-3: #5598e7;
+  --seq-4: #256abf;
+  --seq-5: #104281;
+  --team-a: #2a78d6;
+  --team-b: #e34948;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #121211;
+    --surface: #1a1a19;
+    --surface-2: #232321;
+    --border: #2e2e2b;
+    --text: #ffffff;
+    --text-2: #c3c2b7;
+    --text-3: #8d8c84;
+    --grid: #2a2a27;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --good-bg: #16261a;
+    --warning-bg: #2c2513;
+    --critical-bg: #2e1718;
+    --seq-0: #1f2530;
+    --seq-1: #173a66;
+    --seq-2: #1c5cab;
+    --seq-3: #3987e5;
+    --seq-4: #6da7ec;
+    --seq-5: #b7d3f6;
+    --team-a: #3987e5;
+    --team-b: #e66767;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #121211;
+  --surface: #1a1a19;
+  --surface-2: #232321;
+  --border: #2e2e2b;
+  --text: #ffffff;
+  --text-2: #c3c2b7;
+  --text-3: #8d8c84;
+  --grid: #2a2a27;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --good-bg: #16261a;
+  --warning-bg: #2c2513;
+  --critical-bg: #2e1718;
+  --seq-0: #1f2530;
+  --seq-1: #173a66;
+  --seq-2: #1c5cab;
+  --seq-3: #3987e5;
+  --seq-4: #6da7ec;
+  --seq-5: #b7d3f6;
+  --team-a: #3987e5;
+  --team-b: #e66767;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1180px; margin: 0 auto; padding: 20px 16px 48px; }
+header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+header h1 { font-size: 18px; margin: 0; letter-spacing: -0.01em; }
+header h1 span { color: var(--text-3); font-weight: 500; }
+.spacer { flex: 1; }
+.chip {
+  font: 12px var(--mono); color: var(--text-2);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 999px; padding: 3px 10px; white-space: nowrap;
+}
+.pulse { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--good); margin-right: 6px; vertical-align: 1px; }
+.pulse.stale { background: var(--critical); }
+
+.verdict {
+  display: flex; gap: 14px; align-items: flex-start;
+  border-radius: 12px; padding: 16px 18px; margin-bottom: 16px;
+  border: 1px solid var(--border); background: var(--surface);
+}
+.verdict .icon { width: 28px; height: 28px; flex: none; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; }
+.verdict h2 { margin: 0 0 2px; font-size: 17px; }
+.verdict p { margin: 0; color: var(--text-2); }
+.verdict.clear { background: var(--good-bg); border-color: transparent; }
+.verdict.clear .icon { background: var(--good); }
+.verdict.caution { background: var(--warning-bg); border-color: transparent; }
+.verdict.caution .icon { background: var(--warning); color: #111; }
+.verdict.busy { background: var(--critical-bg); border-color: transparent; }
+.verdict.busy .icon { background: var(--critical); }
+
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 16px; }
+.tile { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+.tile .label { color: var(--text-2); font-size: 12px; }
+.tile .value { font-size: 26px; font-weight: 650; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.tile .sub { color: var(--text-3); font-size: 12px; }
+
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; min-width: 0; }
+.card h3 { margin: 0 0 12px; font-size: 14px; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.card h3 .count { color: var(--text-3); font-weight: 500; }
+.card h3 .right { margin-left: auto; }
+.grid2 { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 16px; }
+@media (max-width: 860px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+.empty { color: var(--text-3); padding: 8px 0; }
+
+.room { border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+.room:last-child { margin-bottom: 0; }
+.room-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.code { font: 600 13px var(--mono); letter-spacing: 0.06em; }
+.tag { font-size: 11px; border-radius: 4px; padding: 1px 6px; background: var(--surface-2); color: var(--text-2); }
+.tag.match { background: var(--critical-bg); color: var(--text); }
+.tag.match::before { content: "\25CF  "; color: var(--critical); }
+.tag.bot { margin-left: 4px; padding: 0 5px; }
+.muted { color: var(--text-3); }
+.small { font-size: 12px; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-weight: 500; color: var(--text-3); font-size: 12px; padding: 4px 8px 6px 0; border-bottom: 1px solid var(--border); }
+td { padding: 6px 8px 6px 0; border-bottom: 1px solid var(--grid); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.team { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; vertical-align: 0; }
+.team.A { background: var(--team-a); }
+.team.B { background: var(--team-b); }
+.conn { font-size: 12px; }
+.conn.off { color: var(--critical); }
+.hp { position: relative; height: 6px; background: var(--surface-2); border-radius: 3px; min-width: 60px; overflow: hidden; margin-top: 7px; }
+.hp i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--good); border-radius: 3px; }
+.turn { font-weight: 600; }
+.scroll { overflow-x: auto; }
+.scroll table { min-width: 620px; }
+
+dl.kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 0; }
+dl.kv dt { color: var(--text-2); }
+dl.kv dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; font-family: var(--mono); font-size: 13px; }
+
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.seg button { font: inherit; font-size: 12px; background: none; border: 0; color: var(--text-2); padding: 4px 10px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--surface-2); color: var(--text); font-weight: 600; }
+.legend { display: flex; gap: 14px; font-size: 12px; color: var(--text-2); }
+.legend i { display: inline-block; width: 10px; height: 3px; border-radius: 2px; margin-right: 6px; vertical-align: 3px; }
+
+.chart { position: relative; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart .axis { fill: var(--text-3); font-size: 11px; }
+.chart .gridline { stroke: var(--grid); stroke-width: 1; }
+.tip {
+  position: absolute; pointer-events: none; z-index: 5;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.12); padding: 8px 10px; font-size: 12px;
+  white-space: nowrap; display: none;
+}
+.tip b { font-variant-numeric: tabular-nums; }
+.tip .swatch { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; }
+
+.heat { display: grid; grid-template-columns: 34px repeat(24, minmax(0, 1fr)); gap: 2px; font-size: 11px; }
+.heat .h { color: var(--text-3); text-align: center; }
+.heat .d { color: var(--text-2); align-self: center; }
+.heat .c { aspect-ratio: 1.3; border-radius: 3px; background: var(--seq-0); min-height: 14px; }
+.heat .c.nodata { background: repeating-linear-gradient(45deg, transparent 0 3px, var(--grid) 3px 4px); }
+.heat .c:hover { outline: 2px solid var(--text); outline-offset: -1px; }
+.scale { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-3); margin-top: 10px; }
+.scale span.s { width: 18px; height: 10px; border-radius: 2px; display: inline-block; }
+.hint { color: var(--text-2); margin: 0 0 12px; }
+.err { background: var(--critical-bg); border-radius: 8px; padding: 10px 12px; margin-bottom: 16px; display: none; }
+footer { color: var(--text-3); font-size: 12px; text-align: center; margin-top: 24px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>GunBros <span>admin</span></h1>
+    <div class="spacer"></div>
+    <span class="chip" id="version">…</span>
+    <span class="chip" id="updated"><span class="pulse" id="pulse"></span>connecting</span>
+  </header>
+
+  <div class="err" id="error"></div>
+
+  <section class="verdict" id="verdict" aria-live="polite">
+    <div class="icon" id="verdict-icon">…</div>
+    <div><h2 id="verdict-title">Loading…</h2><p id="verdict-detail"></p></div>
+  </section>
+
+  <section class="tiles" id="tiles"></section>
+
+  <div class="grid2">
+    <section class="card">
+      <h3>Rooms right now <span class="count" id="rooms-count"></span></h3>
+      <div id="rooms"></div>
+      <h3 style="margin-top:18px">In the lobby <span class="count" id="lobby-count"></span></h3>
+      <div id="lobby"></div>
+    </section>
+    <section class="card">
+      <h3>Server</h3>
+      <dl class="kv" id="server"></dl>
+    </section>
+  </div>
+
+  <section class="card">
+    <h3>
+      Players online
+      <span class="legend">
+        <span><i style="background:var(--series-1)"></i>Online</span>
+        <span><i style="background:var(--series-2)"></i>In a match</span>
+      </span>
+      <span class="right seg" id="range">
+        <button data-h="6">6h</button><button data-h="24" aria-pressed="true">24h</button><button data-h="168">7d</button><button data-h="336">14d</button>
+      </span>
+    </h3>
+    <div class="chart" id="chart"><div class="tip" id="chart-tip"></div></div>
+  </section>
+
+  <section class="card">
+    <h3>Quiet hours <span class="count">average players online, your local time</span></h3>
+    <p class="hint" id="quiet-hint"></p>
+    <div class="heat" id="heat"></div>
+    <div class="scale" id="heat-scale"></div>
+    <div class="tip" id="heat-tip"></div>
+  </section>
+
+  <section class="card">
+    <h3>Recent matches <span class="count" id="matches-count"></span></h3>
+    <div class="scroll"><table id="matches"></table></div>
+  </section>
+
+  <footer id="footer"></footer>
+</div>
+
+<script>
+(function () {
+'use strict';
+var LIVE_MS = 5000, HISTORY_MS = 60000;
+var live = null, hist = null, rangeHours = 24, lastOk = 0;
+try { rangeHours = Number(localStorage.getItem('gunbros.admin.range')) || 24; } catch (e) {}
+
+function $(id) { return document.getElementById(id); }
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+function plural(n, one, many) { return n + ' ' + (n === 1 ? one : (many || one + 's')); }
+function dur(ms) {
+  var s = Math.max(0, Math.round(ms / 1000));
+  if (s < 60) return s + 's';
+  var m = Math.floor(s / 60);
+  if (m < 60) return m + 'm' + (m < 10 && s % 60 ? ' ' + (s % 60) + 's' : '');
+  var h = Math.floor(m / 60);
+  if (h < 48) return h + 'h' + (m % 60 ? ' ' + (m % 60) + 'm' : '');
+  return Math.floor(h / 24) + 'd ' + (h % 24) + 'h';
+}
+function ago(t, now) { return t ? dur(now - t) + ' ago' : 'never'; }
+function clock(t) { return new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+function stamp(t) {
+  var d = new Date(t), today = new Date();
+  var sameDay = d.toDateString() === today.toDateString();
+  return sameDay ? clock(t) : d.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' }) + ' ' + clock(t);
+}
+function localDayKey(t) { var d = new Date(t); return d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(); }
+
+// ---------------------------------------------------------------- fetching
+function get(path) {
+  return fetch(path, { cache: 'no-store', credentials: 'same-origin' }).then(function (r) {
+    if (!r.ok) throw new Error(path + ': HTTP ' + r.status);
+    return r.json();
+  });
+}
+function pollLive() {
+  get('/admin/api/live').then(function (data) {
+    live = data; lastOk = Date.now();
+    $('error').style.display = 'none';
+    renderLive();
+  }).catch(function (err) {
+    $('error').style.display = 'block';
+    $('error').textContent = 'Could not reach the server (' + err.message + '). Retrying…';
+  }).then(function () { setTimeout(pollLive, LIVE_MS); });
+}
+function pollHistory() {
+  get('/admin/api/history').then(function (data) {
+    hist = data; renderChart(); renderHeat();
+  }).catch(function () {}).then(function () { setTimeout(pollHistory, HISTORY_MS); });
+}
+setInterval(function () {
+  var stale = !lastOk || Date.now() - lastOk > LIVE_MS * 3;
+  $('pulse').className = 'pulse' + (stale ? ' stale' : '');
+  $('updated').lastChild.textContent = lastOk ? (stale ? 'no answer for ' + dur(Date.now() - lastOk) : 'live') : 'connecting';
+}, 1000);
+
+// ---------------------------------------------------------------- verdict
+function verdict(d) {
+  var c = d.counts, now = d.now;
+  var inMatchRooms = d.rooms.filter(function (r) { return r.match; });
+  if (inMatchRooms.length) {
+    var longest = Math.max.apply(null, inMatchRooms.map(function (r) { return now - r.match.startedAt; }));
+    return {
+      level: 'busy', icon: '!',
+      title: 'Wait — ' + plural(inMatchRooms.length, 'match', 'matches') + ' in progress',
+      detail: plural(c.inMatch, 'player') + ' mid-match (the longest has been going ' + dur(longest) +
+        '). A deploy restarts the server and ends ' + (inMatchRooms.length === 1 ? 'it' : 'them') + ' with no result.' + typicalLength(d.matches)
+    };
+  }
+  if (c.online > 0) {
+    var inRooms = d.rooms.reduce(function (n, r) { return n + r.players.filter(function (p) { return p.connected && !p.bot; }).length; }, 0);
+    return {
+      level: 'caution', icon: '~',
+      title: 'Okay, but ' + plural(c.online, 'person is', 'people are') + ' online',
+      detail: 'Nobody is in a match. ' + (inRooms ? plural(inRooms, 'player') + ' in a room will lose it and have to make a new one. ' : 'They are in the lobby and will just reconnect. ') +
+        'The deploy takes about a minute.'
+    };
+  }
+  var quiet = d.lastActiveAt ? 'Nobody has been on for ' + dur(now - d.lastActiveAt) + '.' : 'Nobody has been on since this hist started.';
+  if (c.known > 0) quiet += ' ' + plural(c.known, 'player') + ' dropped in the last minute and could still come back to a seat.';
+  return { level: 'clear', icon: '✓', title: 'Clear to deploy — nobody online', detail: quiet };
+}
+
+/** " Matches here usually last about 12m." from the recent finished ones, or ''. */
+function typicalLength(ms) {
+  var lens = ms.filter(function (m) { return m.reason === 'eliminated' || m.reason === 'forfeit'; })
+    .map(function (m) { return m.endedAt - m.startedAt; }).sort(function (a, b) { return a - b; });
+  if (lens.length < 3) return '';
+  return ' Matches here usually last about ' + dur(lens[Math.floor(lens.length / 2)]) + '.';
+}
+
+// ---------------------------------------------------------------- live panels
+function renderLive() {
+  var d = live, now = d.now, s = d.server, c = d.counts;
+  $('version').textContent = s.version === 'dev' ? 'dev build' : s.version;
+
+  var v = verdict(d);
+  $('verdict').className = 'verdict ' + v.level;
+  $('verdict-icon').textContent = v.icon;
+  $('verdict-title').textContent = v.title;
+  $('verdict-detail').textContent = v.detail;
+
+  var today = d.days[new Date(now).toISOString().slice(0, 10)] || { sessions: 0, matches: 0 };
+  var todayPeak = 0;
+  if (hist) {
+    var key = localDayKey(now);
+    for (var i = hist.t.length - 1; i >= 0 && localDayKey(hist.t[i]) === key; i--) todayPeak = Math.max(todayPeak, hist.on[i]);
+  }
+  todayPeak = Math.max(todayPeak, c.online);
+  var tiles = [
+    ['Online now', c.online, c.known > c.online ? (c.known - c.online) + ' reconnecting' : 'players with a socket'],
+    ['In a match', c.inMatch, plural(c.matches, 'match', 'matches') + ' running'],
+    ['Rooms open', c.rooms, 'of ' + s.limits.maxRooms + ' allowed'],
+    ['Peak today', todayPeak, 'all-time ' + d.totals.peakOnline + (d.totals.peakAt ? ', ' + stamp(d.totals.peakAt) : '')],
+    ['Matches today', today.matches, d.totals.matchesStarted + ' since ' + new Date(d.totals.since).toLocaleDateString([], { day: 'numeric', month: 'short' })],
+    ['Sessions today', today.sessions, 'first visits and rejoins (UTC day)']
+  ];
+  $('tiles').innerHTML = tiles.map(function (t) {
+    return '<div class="tile"><div class="label">' + esc(t[0]) + '</div><div class="value">' + esc(t[1]) +
+      '</div><div class="sub">' + esc(t[2]) + '</div></div>';
+  }).join('');
+
+  // rooms
+  $('rooms-count').textContent = d.rooms.length ? String(d.rooms.length) : '';
+  $('rooms').innerHTML = d.rooms.length ? d.rooms.map(function (r) { return roomHtml(r, now); }).join('') :
+    '<div class="empty">No rooms.</div>';
+
+  $('lobby-count').textContent = d.lobby.length ? String(d.lobby.length) : '';
+  $('lobby').innerHTML = d.lobby.length ? '<table><tr><th>Player</th><th>Address</th><th class="num">Online for</th></tr>' +
+    d.lobby.map(function (p) {
+      return '<tr><td>' + esc(p.nick) + '</td><td class="muted small">' + esc(p.address || '') + '</td><td class="num">' + (p.since ? dur(now - p.since) : '') + '</td></tr>';
+    }).join('') + '</table>' : '<div class="empty">Nobody outside a room.</div>';
+
+  // server
+  var ld = s.loopDelayMs;
+  var rows = [
+    ['Up for', dur(now - s.startedAt)],
+    ['Started', stamp(s.startedAt)],
+    ['Build', s.version],
+    ['Node', s.node],
+    ['Sockets', s.sockets + ' / ' + s.limits.maxConnections],
+    ['Memory', s.rssMb + ' MB (heap ' + s.heapMb + ')'],
+    ['Load', s.load.join(' · ') + ' (' + s.cpus + ' cpu)'],
+    ['Loop delay p99', ld.p99 + ' ms'],
+    ['Loop delay max', ld.max + ' ms'],
+    ['History', s.persisted ? 'kept across deploys' : 'in memory only']
+  ];
+  $('server').innerHTML = rows.map(function (r) { return '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>'; }).join('');
+
+  renderMatches();
+  $('footer').textContent = 'Read-only. Refreshes every ' + LIVE_MS / 1000 + ' s; history every minute. History since ' + stamp(d.totals.since) + '.';
+}
+
+/* A practice bot (DESIGN §11): its difficulty in a tag after the name. Always "online". */
+function botTag(level) {
+  return level ? '<span class="tag bot" title="practice bot">bot · ' + esc(level) + '</span>' : '';
+}
+function linkCell(p, dropped) {
+  if (p.bot) return '<td class="num muted small">bot</td>';
+  return '<td class="num conn' + (p.connected ? '' : ' off') + '">' + (p.connected ? 'online' : dropped) + '</td>';
+}
+
+function roomHtml(r, now) {
+  var head = '<div class="room-head"><span class="code">' + esc(r.code) + '</span>' +
+    (r.match ? '<span class="tag match">match · turn ' + esc(r.match.turn) + '</span>' : '<span class="tag">lobby</span>') +
+    '<span class="tag">' + esc(r.mapName) + '</span>' +
+    (r.listed ? '<span class="tag">listed</span>' : '') +
+    '<span class="muted small" style="margin-left:auto">' + (r.match ? 'playing ' + dur(now - r.match.startedAt) + (r.match.sky && r.match.sky !== 'none' ? ' · sky: ' + esc(r.match.sky) : '') : 'open ' + dur(now - r.createdAt)) + '</span></div>';
+  var body;
+  if (r.match) {
+    body = '<table><tr><th>Player</th><th>Mobile</th><th>HP</th><th class="num">Link</th></tr>' + r.match.seats.map(function (s, i) {
+      var pct = s.maxHp ? Math.round(100 * s.hp / s.maxHp) : 0;
+      var active = i === r.match.activeSeat;
+      return '<tr><td' + (active ? ' class="turn"' : '') + '><span class="team ' + esc(s.team) + '"></span>' + esc(s.nick) + botTag(s.bot) + (active ? ' <span class="muted small">(turn)</span>' : '') + '</td>' +
+        '<td>' + esc(s.mobile) + '</td>' +
+        '<td>' + (s.alive ? '<div class="hp" title="' + s.hp + ' / ' + s.maxHp + '"><i style="width:' + pct + '%"></i></div>' : '<span class="muted small">down</span>') + '</td>' +
+        linkCell(s, '⚠ dropped') + '</tr>';
+    }).join('') + '</table>';
+  } else {
+    body = '<table><tr><th>Player</th><th>Mobile</th><th>Ready</th><th class="num">Link</th></tr>' + r.players.map(function (p) {
+      return '<tr><td><span class="team ' + esc(p.team) + '"></span>' + esc(p.nick) + botTag(p.bot) + (p.host ? ' <span class="muted small">(host)</span>' : '') + '</td>' +
+        '<td>' + esc(p.mobile) + '</td><td>' + (p.ready ? '✓ ready' : '<span class="muted">–</span>') + '</td>' +
+        linkCell(p, '⚠ dropped ' + ago(p.disconnectedAt, now)) + '</tr>';
+    }).join('') + '</table>';
+  }
+  return '<div class="room">' + head + body + '</div>';
+}
+
+var REASONS = { eliminated: 'won', forfeit: 'forfeit', abandoned: 'error', closed: 'room closed' };
+function renderMatches() {
+  var ms = live.matches;
+  $('matches-count').textContent = ms.length ? 'last ' + ms.length : '';
+  if (!ms.length) { $('matches').innerHTML = '<tr><td class="empty">No matches yet.</td></tr>'; return; }
+  $('matches').innerHTML = '<tr><th>Ended</th><th>Map</th><th>Players</th><th>Result</th><th class="num">Turns</th><th class="num">Length</th></tr>' +
+    ms.map(function (m) {
+      var players = m.players.map(function (p) {
+        var won = m.winnerTeam && p.team === m.winnerTeam;
+        return '<span style="white-space:nowrap' + (won ? ';font-weight:600' : '') + '"><span class="team ' + esc(p.team) + '"></span>' + esc(p.nick) + botTag(p.bot) + ' <span class="muted small">' + esc(p.mobile) + '</span></span>';
+      }).join(' &nbsp;');
+      var result = m.winnerTeam ? 'Team ' + esc(m.winnerTeam) + ' ' + esc(REASONS[m.reason] === 'forfeit' ? 'by forfeit' : 'won') : esc(REASONS[m.reason] || m.reason);
+      return '<tr><td class="small">' + esc(stamp(m.endedAt)) + '</td><td>' + esc(m.mapName) + '</td><td>' + players + '</td><td>' + result +
+        '</td><td class="num">' + esc(m.turns) + '</td><td class="num">' + dur(m.endedAt - m.startedAt) + '</td></tr>';
+    }).join('');
+}
+
+// ---------------------------------------------------------------- activity chart
+var NS = 'http://www.w3.org/2000/svg';
+function renderChart() {
+  var box = $('chart'), tip = $('chart-tip');
+  var old = box.querySelector('svg'); if (old) old.remove();
+  if (!hist) return;
+  var W = Math.max(320, box.clientWidth), H = 220, L = 30, R = 8, T = 10, B = 24;
+  var now = Date.now(), from = now - rangeHours * 3600e3;
+  // Bucket so a 14-day view is ~ one point per pixel column at most; keep the max, so a
+  // short busy spell is never averaged away.
+  var span = rangeHours * 60, bucketMin = Math.max(1, Math.ceil(span / ((W - L - R) / 2)));
+  var bucketMs = bucketMin * 60e3;
+  var buckets = new Map();
+  for (var i = 0; i < hist.t.length; i++) {
+    var t = hist.t[i]; if (t < from) continue;
+    var k = t - (t % bucketMs);
+    var b = buckets.get(k);
+    if (!b) { b = { t: k, on: 0, inMatch: 0, matches: 0 }; buckets.set(k, b); }
+    b.on = Math.max(b.on, hist.on[i]); b.inMatch = Math.max(b.inMatch, hist.inMatch[i]); b.matches = Math.max(b.matches, hist.matches[i]);
+  }
+  var pts = Array.from(buckets.values()).sort(function (a, b) { return a.t - b.t; });
+  var maxY = Math.max(2, pts.reduce(function (m, p) { return Math.max(m, p.on); }, 0));
+  var step = maxY <= 5 ? 1 : maxY <= 10 ? 2 : maxY <= 25 ? 5 : 10;
+  maxY = Math.ceil(maxY / step) * step;
+  var x = function (t) { return L + (t - from) / (now - from) * (W - L - R); };
+  var y = function (v) { return T + (1 - v / maxY) * (H - T - B); };
+
+  var svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-label', 'Players online over the last ' + rangeHours + ' hours');
+  var html = '';
+  for (var v = 0; v <= maxY; v += step) {
+    html += '<line class="gridline" x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v) + '" y2="' + y(v) + '"/>' +
+      '<text class="axis" x="' + (L - 6) + '" y="' + (y(v) + 4) + '" text-anchor="end">' + v + '</text>';
+  }
+  var tickEvery = rangeHours <= 6 ? 1 : rangeHours <= 24 ? 4 : 24;
+  var first = new Date(from); first.setMinutes(0, 0, 0);
+  if (rangeHours > 24) first.setHours(0);
+  // Never closer than ~70 px: a phone gets every other label (or fewer).
+  var hourPx = (W - L - R) / rangeHours;
+  while (tickEvery * hourPx < 70 && tickEvery < 24) tickEvery *= 2;
+  if (tickEvery > 24) tickEvery = 24;
+  var dayEvery = Math.max(1, Math.ceil(70 / (hourPx * 24)));
+  for (var tt = first.getTime(); tt <= now; tt += 3600e3) {
+    var dt = new Date(tt);
+    if (tt < from || dt.getHours() % tickEvery) continue;
+    if (tickEvery === 24 && Math.round((tt - first.getTime()) / 86400e3) % dayEvery) continue;
+    var label = tickEvery === 24 ? dt.toLocaleDateString([], { weekday: 'short', day: 'numeric' }) : clock(tt);
+    html += '<text class="axis" x="' + x(tt) + '" y="' + (H - 6) + '" text-anchor="middle">' + esc(label) + '</text>';
+  }
+  // A gap in the samples (server down, or a deploy) breaks the line instead of bridging it.
+  function path(key) {
+    var d = '', prev = null;
+    pts.forEach(function (p) {
+      var gap = !prev || p.t - prev.t > bucketMs * 3;
+      d += (gap ? 'M' : 'L') + x(p.t).toFixed(1) + ' ' + y(p[key]).toFixed(1) + ' ';
+      prev = p;
+    });
+    return d;
+  }
+  if (pts.length) {
+    html += '<path d="' + path('on') + '" fill="none" stroke="var(--series-1)" stroke-width="2" stroke-linejoin="round"/>';
+    html += '<path d="' + path('inMatch') + '" fill="none" stroke="var(--series-2)" stroke-width="2" stroke-linejoin="round"/>';
+  } else {
+    html += '<text class="axis" x="' + (W / 2) + '" y="' + (H / 2) + '" text-anchor="middle">No samples in this range yet</text>';
+  }
+  html += '<line id="xhair" x1="0" x2="0" y1="' + T + '" y2="' + (H - B) + '" stroke="var(--text-3)" stroke-width="1" visibility="hidden"/>' +
+    '<circle id="dot1" r="4" fill="var(--series-1)" stroke="var(--surface)" stroke-width="2" visibility="hidden"/>' +
+    '<circle id="dot2" r="4" fill="var(--series-2)" stroke="var(--surface)" stroke-width="2" visibility="hidden"/>' +
+    '<rect x="' + L + '" y="0" width="' + (W - L - R) + '" height="' + H + '" fill="transparent" id="hit"/>';
+  svg.innerHTML = html;
+  box.insertBefore(svg, tip);
+
+  var hit = svg.querySelector('#hit'), xh = svg.querySelector('#xhair'), d1 = svg.querySelector('#dot1'), d2 = svg.querySelector('#dot2');
+  function hide() { [xh, d1, d2].forEach(function (e) { e.setAttribute('visibility', 'hidden'); }); tip.style.display = 'none'; }
+  hit.addEventListener('mouseleave', hide);
+  hit.addEventListener('mousemove', function (ev) {
+    if (!pts.length) return;
+    var rect = svg.getBoundingClientRect(), sx = (ev.clientX - rect.left) * W / rect.width;
+    var best = pts[0], bd = Infinity;
+    pts.forEach(function (p) { var dd = Math.abs(x(p.t) - sx); if (dd < bd) { bd = dd; best = p; } });
+    if (bd > 20) { hide(); return; }
+    var px = x(best.t);
+    xh.setAttribute('x1', px); xh.setAttribute('x2', px);
+    d1.setAttribute('cx', px); d1.setAttribute('cy', y(best.on));
+    d2.setAttribute('cx', px); d2.setAttribute('cy', y(best.inMatch));
+    [xh, d1, d2].forEach(function (e) { e.setAttribute('visibility', 'visible'); });
+    tip.innerHTML = '<div class="muted">' + esc(stamp(best.t)) + (bucketMin > 1 ? ' · peak of ' + bucketMin + ' min' : '') + '</div>' +
+      '<div><span class="swatch" style="background:var(--series-1)"></span>Online <b>' + best.on + '</b></div>' +
+      '<div><span class="swatch" style="background:var(--series-2)"></span>In a match <b>' + best.inMatch + '</b></div>' +
+      '<div class="muted">' + plural(best.matches, 'match', 'matches') + '</div>';
+    tip.style.display = 'block';
+    var left = px / W * rect.width + 12;
+    if (left + tip.offsetWidth > rect.width) left -= tip.offsetWidth + 24;
+    tip.style.left = left + 'px'; tip.style.top = '8px';
+  });
+}
+Array.prototype.forEach.call(document.querySelectorAll('#range button'), function (btn) {
+  btn.setAttribute('aria-pressed', String(Number(btn.dataset.h) === rangeHours));
+  btn.addEventListener('click', function () {
+    rangeHours = Number(btn.dataset.h);
+    try { localStorage.setItem('gunbros.admin.range', String(rangeHours)); } catch (e) {}
+    Array.prototype.forEach.call(document.querySelectorAll('#range button'), function (b) { b.setAttribute('aria-pressed', String(b === btn)); });
+    renderChart();
+  });
+});
+var resizeTimer = 0;
+window.addEventListener('resize', function () { clearTimeout(resizeTimer); resizeTimer = setTimeout(renderChart, 150); });
+
+// ---------------------------------------------------------------- quiet hours
+var DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+function renderHeat() {
+  if (!hist) return;
+  var sum = [], n = [];
+  for (var i = 0; i < 168; i++) { sum.push(0); n.push(0); }
+  for (var j = 0; j < hist.t.length; j++) {
+    var d = new Date(hist.t[j]);
+    var cell = ((d.getDay() + 6) % 7) * 24 + d.getHours();
+    sum[cell] += hist.on[j]; n[cell]++;
+  }
+  var avg = sum.map(function (s, k) { return n[k] ? s / n[k] : null; });
+  var max = Math.max(0.01, Math.max.apply(null, avg.map(function (a) { return a || 0; })));
+  var steps = ['--seq-0', '--seq-1', '--seq-2', '--seq-3', '--seq-4', '--seq-5'];
+  function color(a) {
+    if (a === 0) return 'var(--seq-0)';
+    return 'var(' + steps[Math.min(5, 1 + Math.floor(a / max * 4.999))] + ')';
+  }
+  var html = '<div></div>';
+  for (var h = 0; h < 24; h++) html += '<div class="h">' + (h % 3 === 0 ? h : '') + '</div>';
+  for (var day = 0; day < 7; day++) {
+    html += '<div class="d">' + DAYS[day] + '</div>';
+    for (var hr = 0; hr < 24; hr++) {
+      var k2 = day * 24 + hr, a2 = avg[k2];
+      html += '<div class="c' + (a2 === null ? ' nodata' : '') + '" data-k="' + k2 + '"' + (a2 === null ? '' : ' style="background:' + color(a2) + '"') + '></div>';
+    }
+  }
+  $('heat').innerHTML = html;
+  $('heat-scale').innerHTML = 'fewer <span class="s" style="background:var(--seq-0)"></span>' +
+    steps.slice(1).map(function (s) { return '<span class="s" style="background:var(' + s + ')"></span>'; }).join('') +
+    ' more &nbsp;·&nbsp; <span class="s" style="background:repeating-linear-gradient(45deg, transparent 0 3px, var(--grid) 3px 4px);border:1px solid var(--border)"></span> no data yet';
+
+  // The quietest 3-hour window with data, starting from any hour of the week.
+  var best = null;
+  for (var s0 = 0; s0 < 168; s0++) {
+    var tot = 0, ok = true;
+    for (var q = 0; q < 3; q++) { var a3 = avg[(s0 + q) % 168]; if (a3 === null) { ok = false; break; } tot += a3; }
+    if (ok && (!best || tot < best.tot - 1e-9)) best = { s: s0, tot: tot };
+  }
+  var hours = n.filter(function (x) { return x > 0; }).length;
+  var hint;
+  if (hours < 24) hint = 'Still learning: ' + plural(hours, 'hour') + ' of the week sampled so far. This fills in as the server runs.';
+  else if (best && best.tot === 0) {
+    var zero = avg.filter(function (a) { return a === 0; }).length;
+    hint = plural(zero, 'hour') + ' of the week had nobody on at all. e.g. ' + DAYS[Math.floor(best.s / 24)] + ' ' + pad(best.s % 24) + ':00–' + pad((best.s + 3) % 24) + ':00.';
+  } else if (best) hint = 'Quietest stretch: ' + DAYS[Math.floor(best.s / 24)] + ' ' + pad(best.s % 24) + ':00–' + pad((best.s + 3) % 24) + ':00 (' + (best.tot / 3).toFixed(1) + ' online on average).';
+  $('quiet-hint').textContent = hint || '';
+
+  var tip = $('heat-tip'), card = $('heat').parentNode;
+  card.style.position = 'relative';
+  $('heat').onmousemove = function (ev) {
+    var c = ev.target.closest('.c'); if (!c) { tip.style.display = 'none'; return; }
+    var k = Number(c.dataset.k), a = avg[k];
+    tip.innerHTML = '<div class="muted">' + DAYS[Math.floor(k / 24)] + ' ' + pad(k % 24) + ':00–' + pad((k % 24) + 1) + ':00</div>' +
+      (a === null ? 'no data yet' : 'avg <b>' + a.toFixed(2) + '</b> online · ' + plural(Math.round(n[k] / 60 * 10) / 10, 'hour') + ' sampled');
+    tip.style.display = 'block';
+    var cr = card.getBoundingClientRect(), r = c.getBoundingClientRect();
+    var left = r.left - cr.left + r.width / 2 - tip.offsetWidth / 2;
+    tip.style.left = Math.max(4, Math.min(cr.width - tip.offsetWidth - 4, left)) + 'px';
+    tip.style.top = (r.top - cr.top - tip.offsetHeight - 6) + 'px';
+  };
+  $('heat').onmouseleave = function () { tip.style.display = 'none'; };
+}
+function pad(h) { return (h < 10 ? '0' : '') + h; }
+
+pollLive();
+pollHistory();
+})();
+</script>
+</body>
+</html>

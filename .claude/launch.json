@@ -1,0 +1,62 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "client",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "@gunbros/client",
+        "dev"
+      ],
+      "port": 5173
+    },
+    {
+      "name": "server",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "@gunbros/server",
+        "dev"
+      ],
+      "port": 8080
+    },
+    {
+      "name": "client-alt",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "CLIENT_PORT=8130",
+        "SERVER_PORT=8131",
+        "pnpm",
+        "--filter",
+        "@gunbros/client",
+        "dev"
+      ],
+      "port": 8130
+    },
+    {
+      "name": "server-alt",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "PORT=8131",
+        "pnpm",
+        "--filter",
+        "@gunbros/server",
+        "dev"
+      ],
+      "port": 8131
+    },
+    {
+      "name": "site",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8140",
+        "--directory",
+        "site/dist"
+      ],
+      "port": 8140
+    }
+  ]
+}

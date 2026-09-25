@@ -1,0 +1,11 @@
+{
+  // The simulation itself: no ambient Node or DOM types at all, so a stray `process`
+  // or `document` is a type error long before it is a runtime bug (DESIGN §1.2).
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "noEmit": true,
+    "types": []
+  },
+  "include": ["src"]
+}

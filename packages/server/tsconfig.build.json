@@ -1,0 +1,16 @@
+{
+  // Production emit. No `paths`: the import specifier `@gunbros/shared` survives into
+  // `dist/*.js` and Node resolves it through the workspace link to the shared package's
+  // own `dist`, which `pnpm -r build` has already produced (DESIGN §1.5).
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "noEmit": false,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2023"],
+    "types": ["node"]
+  },
+  "include": ["src"]
+}

@@ -1,0 +1,15 @@
+{
+  // The client's tests run in Node (no DOM) and may use Node types; `src` itself may not.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "..",
+    "noEmit": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["node", "vite/client"],
+    "baseUrl": ".",
+    "paths": {
+      "@gunbros/shared": ["../shared/src/index.ts"]
+    }
+  },
+  "include": ["test", "src", "vitest.config.ts"]
+}

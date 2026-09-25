@@ -1,0 +1,31 @@
+# Everything the image builds for itself, or never needs.
+node_modules
+**/node_modules
+dist
+**/dist
+*.tsbuildinfo
+
+.git
+.gitignore
+.github
+.claude
+.vscode
+.DS_Store
+
+# tests and docs are not part of the running server
+e2e/tests
+e2e/playwright.config.ts
+e2e/tsconfig.json
+e2e/README.md
+test-results
+playwright-report
+blob-report
+playwright/.cache
+docs
+README.md
+Dockerfile
+.dockerignore
+*.log
+.env
+.env.*
+.admin-password

@@ -1,0 +1,588 @@
+{
+  "mobile": "shrike",
+  "frameSize": [
+    80,
+    68
+  ],
+  "anchor": [
+    36,
+    65
+  ],
+  "barrelLength": 12,
+  "tickRate": 60,
+  "sheets": {
+    "body": "shrike_body.png",
+    "barrel": "shrike_barrel.png"
+  },
+  "states": {
+    "idle": {
+      "frameTicks": 10,
+      "frameMs": 167,
+      "loop": true,
+      "frames": [
+        {
+          "rect": [
+            0,
+            0,
+            80,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            51.0,
+            40.0
+          ],
+          "muzzle": [
+            63.0,
+            40.0
+          ]
+        },
+        {
+          "rect": [
+            80,
+            0,
+            80,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            51.0,
+            40.0
+          ],
+          "muzzle": [
+            63.0,
+            40.0
+          ]
+        },
+        {
+          "rect": [
+            160,
+            0,
+            80,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            51.0,
+            40.97
+          ],
+          "muzzle": [
+            63.0,
+            40.97
+          ]
+        },
+        {
+          "rect": [
+            240,
+            0,
+            80,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            51.0,
+            40.97
+          ],
+          "muzzle": [
+            63.0,
+            40.97
+          ]
+        },
+        {
+          "rect": [
+            320,
+            0,
+            80,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            51.0,
+            40.97
+          ],
+          "muzzle": [
+            63.0,
+            40.97
+          ]
+        },
+        {
+          "rect": [
+            400,
+            0,
+            80,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            51.0,
+            40.0
+          ],
+          "muzzle": [
+            63.0,
+            40.0
+          ]
+        }
+      ]
+    },
+    "move": {
+      "frameTicks": 5,
+      "frameMs": 83,
+      "loop": true,
+      "frames": [
+        {
+          "rect": [
+            0,
+            68,
+            80,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            51.0,
+            40.97
+          ],
+          "muzzle": [
+            63.0,
+            40.97
+          ]
+        },
+        {
+          "rect": [
+            80,
+            68,
+            80,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            51.0,
+            40.0
+          ],
+          "muzzle": [
+            63.0,
+            40.0
+          ]
+        },
+        {
+          "rect": [
+            160,
+            68,
+            80,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            51.0,
+            40.0
+          ],
+          "muzzle": [
+            63.0,
+            40.0
+          ]
+        },
+        {
+          "rect": [
+            240,
+            68,
+            80,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            51.0,
+            40.0
+          ],
+          "muzzle": [
+            63.0,
+            40.0
+          ]
+        },
+        {
+          "rect": [
+            320,
+            68,
+            80,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            51.0,
+            40.97
+          ],
+          "muzzle": [
+            63.0,
+            40.97
+          ]
+        },
+        {
+          "rect": [
+            400,
+            68,
+            80,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            51.0,
+            40.0
+          ],
+          "muzzle": [
+            63.0,
+            40.0
+          ]
+        },
+        {
+          "rect": [
+            480,
+            68,
+            80,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            51.0,
+            40.0
+          ],
+          "muzzle": [
+            63.0,
+            40.0
+          ]
+        },
+        {
+          "rect": [
+            560,
+            68,
+            80,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            51.0,
+            40.0
+          ],
+          "muzzle": [
+            63.0,
+            40.0
+          ]
+        }
+      ]
+    },
+    "charge": {
+      "frameTicks": 7,
+      "frameMs": 117,
+      "loop": true,
+      "frames": [
+        {
+          "rect": [
+            0,
+            136,
+            80,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            51.0,
+            41.93
+          ],
+          "muzzle": [
+            63.0,
+            41.93
+          ]
+        },
+        {
+          "rect": [
+            80,
+            136,
+            80,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            51.0,
+            42.9
+          ],
+          "muzzle": [
+            63.0,
+            42.9
+          ]
+        }
+      ]
+    },
+    "fire": {
+      "frameTicks": 5,
+      "frameMs": 83,
+      "loop": false,
+      "frames": [
+        {
+          "rect": [
+            0,
+            204,
+            80,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            49.0,
+            40.0
+          ],
+          "muzzle": [
+            61.0,
+            40.0
+          ]
+        },
+        {
+          "rect": [
+            80,
+            204,
+            80,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            49.0,
+            40.0
+          ],
+          "muzzle": [
+            61.0,
+            40.0
+          ]
+        },
+        {
+          "rect": [
+            160,
+            204,
+            80,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            50.0,
+            40.0
+          ],
+          "muzzle": [
+            62.0,
+            40.0
+          ]
+        },
+        {
+          "rect": [
+            240,
+            204,
+            80,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            51.0,
+            40.0
+          ],
+          "muzzle": [
+            63.0,
+            40.0
+          ]
+        },
+        {
+          "rect": [
+            320,
+            204,
+            80,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            51.0,
+            40.0
+          ],
+          "muzzle": [
+            63.0,
+            40.0
+          ]
+        }
+      ]
+    },
+    "hurt": {
+      "frameTicks": 5,
+      "frameMs": 83,
+      "loop": false,
+      "frames": [
+        {
+          "rect": [
+            0,
+            272,
+            80,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            49.0,
+            39.03
+          ],
+          "muzzle": [
+            61.0,
+            39.03
+          ]
+        },
+        {
+          "rect": [
+            80,
+            272,
+            80,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            52.0,
+            40.97
+          ],
+          "muzzle": [
+            64.0,
+            40.97
+          ]
+        },
+        {
+          "rect": [
+            160,
+            272,
+            80,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            51.0,
+            40.0
+          ],
+          "muzzle": [
+            63.0,
+            40.0
+          ]
+        }
+      ]
+    },
+    "death": {
+      "frameTicks": 7,
+      "frameMs": 117,
+      "loop": false,
+      "frames": [
+        {
+          "rect": [
+            0,
+            340,
+            80,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            51.0,
+            39.03
+          ],
+          "muzzle": [
+            63.0,
+            39.03
+          ]
+        },
+        {
+          "rect": [
+            80,
+            340,
+            80,
+            68
+          ],
+          "barrel": true,
+          "pivot": [
+            51.0,
+            40.0
+          ],
+          "muzzle": [
+            63.0,
+            40.0
+          ]
+        },
+        {
+          "rect": [
+            160,
+            340,
+            80,
+            68
+          ],
+          "barrel": false,
+          "pivot": [
+            49.83,
+            37.63
+          ],
+          "muzzle": [
+            61.83,
+            37.63
+          ]
+        },
+        {
+          "rect": [
+            240,
+            340,
+            80,
+            68
+          ],
+          "barrel": false,
+          "pivot": [
+            51.02,
+            46.25
+          ],
+          "muzzle": [
+            63.02,
+            46.25
+          ]
+        },
+        {
+          "rect": [
+            320,
+            340,
+            80,
+            68
+          ],
+          "barrel": false,
+          "pivot": [
+            52.48,
+            55.3
+          ],
+          "muzzle": [
+            64.48,
+            55.3
+          ]
+        },
+        {
+          "rect": [
+            400,
+            340,
+            80,
+            68
+          ],
+          "barrel": false,
+          "pivot": [
+            52.99,
+            58.58
+          ],
+          "muzzle": [
+            64.99,
+            58.58
+          ]
+        },
+        {
+          "rect": [
+            480,
+            340,
+            80,
+            68
+          ],
+          "barrel": false,
+          "pivot": [
+            52.99,
+            58.58
+          ],
+          "muzzle": [
+            64.99,
+            58.58
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,137 @@
+{
+  "comment": "Every named colour a pre-rendered mobile may use. Ramps run shadow, mid, light, highlight and become toon materials of the same name; flats are unlit. There is no global cap: each mobile declares the materials it uses (run_mobile(materials=...)) and postprocess.py quantises it to the outline plus those, at most maxColoursPerMobile. Share the neutral ramps (steel, rubber, glass, char, smoke, flats) so the roster stays coherent; hue ramps are per mobile.",
+  "maxColoursPerMobile": 24,
+  "outline": "#171a2b",
+  "ramps": {
+    "paint": [
+      "#1f4a3a",
+      "#2f7d4c",
+      "#5cb45a",
+      "#a9e083"
+    ],
+    "blue": [
+      "#1d3a66",
+      "#2f62a3",
+      "#5a97d6",
+      "#a5d3f5"
+    ],
+    "violet": [
+      "#3a2470",
+      "#6a45c0",
+      "#a07af0",
+      "#d8c4ff"
+    ],
+    "ice": [
+      "#2a6a9c",
+      "#4aa0d8",
+      "#8fd4f5",
+      "#c9ecff"
+    ],
+    "boot": [
+      "#183a5c",
+      "#254f80",
+      "#3f7ab0",
+      "#4aa0d8"
+    ],
+    "white": [
+      "#6f7a8a",
+      "#aeb8c4",
+      "#e6ecf2",
+      "#ffffff"
+    ],
+    "crimson": [
+      "#5c1620",
+      "#a8202e",
+      "#e04a4a",
+      "#ff8f7a"
+    ],
+    "amber": [
+      "#8a4a12",
+      "#e08a24",
+      "#f7b733",
+      "#ffe28a"
+    ],
+    "orange": [
+      "#7a3410",
+      "#c4561c",
+      "#ee7f2e",
+      "#ffb45e"
+    ],
+    "shell": [
+      "#174a44",
+      "#1f7a62",
+      "#35a883",
+      "#7fdcae"
+    ],
+    "skin": [
+      "#4a6b1a",
+      "#7da02a",
+      "#a8cf3f",
+      "#a8cf3f"
+    ],
+    "bone": [
+      "#b89452",
+      "#ecd596",
+      "#fff2b8",
+      "#fff2b8"
+    ],
+    "steel": [
+      "#343d4b",
+      "#5a6878",
+      "#8d9eae",
+      "#d6e2ec"
+    ],
+    "rubber": [
+      "#1d212b",
+      "#343d4b",
+      "#5a6878",
+      "#8d9eae"
+    ],
+    "accent": [
+      "#7a1f2a",
+      "#c4392f",
+      "#ee7350",
+      "#ee7350"
+    ],
+    "glass": [
+      "#245f8a",
+      "#3f9ccc",
+      "#86dcff",
+      "#86dcff"
+    ],
+    "char": [
+      "#26221f",
+      "#463d35",
+      "#6b6055",
+      "#6b6055"
+    ],
+    "smoke": [
+      "#343d4b",
+      "#5a6878",
+      "#8d9eae",
+      "#8d9eae"
+    ],
+    "plate": [
+      "#151b24",
+      "#2b3646",
+      "#3a4759",
+      "#6d7c8c"
+    ],
+    "well": [
+      "#0b0f15",
+      "#141a23",
+      "#1d2632",
+      "#2b3646"
+    ]
+  },
+  "flats": {
+    "lamp": "#ffcf4d",
+    "flame": "#ee8a2c",
+    "flash": "#fff2b8",
+    "eye": "#d6e2ec",
+    "ink": "#171a2b",
+    "cyan": "#86dcff",
+    "rune": "#a07af0",
+    "pink": "#ee7350"
+  }
+}

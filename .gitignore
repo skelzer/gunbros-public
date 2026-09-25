@@ -1,0 +1,23 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.DS_Store
+
+# playwright
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# sprite previews written by `pnpm sprites:render` (tools/sprites/render.ts)
+.art-preview/
+
+# editors / logs
+.vscode/
+*.log
+
+# splash page build output (`pnpm site`)
+site/dist/
+
+# admin portal password (`/admin`, docs/DEPLOY.md); never committed
+.admin-password

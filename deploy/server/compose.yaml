@@ -1,0 +1,48 @@
+# GunBros on one server: Caddy (TLS, ports 80/443) in front of the game (docs/DEPLOY.md).
+#
+# Lives in /opt/gunbros on the server, next to the Caddyfile and an optional .env;
+# deploy/server/deploy.sh copies it there and loads the image. Only Caddy publishes
+# ports. The game's 8080 is reachable on the compose network alone, so every request it
+# sees came through Caddy and X-Real-IP (set by Caddy, never passed through from the
+# client) can be trusted.
+#
+# Rooms live in the game process's memory: exactly one game container, never scaled.
+
+name: gunbros
+
+services:
+  game:
+    image: gunbros:latest          # loaded by deploy.sh (docker save | ssh | docker load)
+    restart: unless-stopped
+    environment:
+      CLIENT_IP_HEADER: x-real-ip
+      DATA_DIR: /data                # admin portal history, kept across deploys
+    # ADMIN_PASSWORD (written by deploy.sh), and anything else (LOG_LEVEL, ROOM_TTL_MS,
+    # MAX_ROOMS …, see server/src/config.ts).
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - game_data:/data
+    expose:
+      - "8080"
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - game
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      GAME_DOMAIN: ${GAME_DOMAIN:-play.gunbros.example.com}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data             # certificates and ACME account: must survive restarts
+      - caddy_config:/config
+
+volumes:
+  game_data:
+  caddy_data:
+  caddy_config:
